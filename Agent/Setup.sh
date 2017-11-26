@@ -93,11 +93,11 @@ rm -rf flask
 #
 # Step 5: Fetch Agent code from the repository
 #
-curl -H "Accept: application/vnd.github.v3.raw" -O -L https://api.github.com/repos/thvenket/duplo/contents/ContainerManagement/Containers/Agent/AgentV2/NetworkAgentV2.py
+curl -H "Accept: application/vnd.github.v3.raw" -O -L https://api.github.com/repos/duplocloud/linuxagent/contents/Agent/AgentV2/NetworkAgentV2.py
 
-curl -H "Accept: application/vnd.github.v3.raw" -O -L https://api.github.com/repos/thvenket/duplo/contents/ContainerManagement/Containers/Agent/AgentV2/NetworkSetupV2.py
+curl -H "Accept: application/vnd.github.v3.raw" -O -L https://api.github.com/repos/duplocloud/linuxagent/contents/Agent/AgentV2/NetworkSetupV2.py
 
-curl -H "Accept: application/vnd.github.v3.raw" -O -L https://api.github.com/repos/thvenket/duplo/contents/ContainerManagement/Containers/Agent/AgentV2/udptunnelv1.py
+curl -H "Accept: application/vnd.github.v3.raw" -O -L https://api.github.com/repos/duplocloud/linuxagent/contents/Agent/AgentV2/udptunnelv1.py
 
 chmod a+x NetworkAgentV2.py
 chmod a+x udptunnelv1.py
@@ -153,8 +153,8 @@ ubuntuInstall () {
    echo "Performing Ubuntu Install "
    cd /etc/init/
    echo $PWD
-   curl -H "Accept: application/vnd.github.v3.raw" -O -L https://api.github.com/repos/thvenket/duplo/contents/ContainerManagement/Containers/Agent/udptunnel.conf
-   curl -H "Accept: application/vnd.github.v3.raw" -O -L https://api.github.com/repos/thvenket/duplo/contents/ContainerManagement/Containers/Agent/NetworkAgent.conf
+   curl -H "Accept: application/vnd.github.v3.raw" -O -L https://api.github.com/repos/duplocloud/linuxagent/contents/Agent/udptunnel.conf
+   curl -H "Accept: application/vnd.github.v3.raw" -O -L https://api.github.com/repos/duplocloud/linuxagent/contents/Agent/NetworkAgent.conf
    sudo start NetworkAgent
 }
 
@@ -178,4 +178,5 @@ case $OS in
       echo "Unsupport OS: $OS, Version: $VER"
       ;;
 esac
+
 

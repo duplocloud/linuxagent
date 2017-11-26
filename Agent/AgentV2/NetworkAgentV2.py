@@ -28,6 +28,7 @@ TenantID = 'Empty'
 RegistryToken = 'Empty'
 EngineEndpoint = 'Empty'
 NetworkProvider = 'custom'
+g_RequiredImages=None
 
 class Minion:
     def __init__(self, name, subnet, directAddress, directIpAddr):
@@ -452,6 +453,7 @@ def UpdateMinionState():
     global EngineEndpoint
     global NetworkProvider
     global g_udpmode
+    global g_RequiredImages
 
     lSubnet = request.json['Subnet']
     lMinionName = request.json['Name']
@@ -502,7 +504,17 @@ def UpdateMinionState():
         logger.debug('GRE Mode Tunnels') 
     
     updateNatRules(lSubnet)
-	
+    logger.debug(request.json)
+    if 'Images' in request.json:
+        logger.debug('UpdateMinionState: Required Images has been set')
+        if request.json['Images'] is not None:
+            g_RequiredImages = list()
+            for lImg in request.json['Images']:    
+                g_RequiredImages.append(lImg)
+        logger.debug(g_RequiredImages)
+    else:
+        logger.debug('UpdateMinionState: Required Images was not set')
+    	
     return jsonify({}), 201
 
 @app.route('/NetworkAgent/api/v1.0/GetTenantID', methods=['GET'])
@@ -536,9 +548,14 @@ def downloadImage(aInImageName):
 
 def updateImages():
     global TenantID
+    global g_RequiredImages
+
     if TenantID == 'Empty':
             logger.debug('TenantID has not been set yet')
             return
+
+    logger.debug('updateImages call ...')
+    logger.debug(g_RequiredImages)
 
     lLocalImages = {}
     lDockersImgUrl = 'http://127.0.0.1:4243/images/json'
@@ -557,15 +574,20 @@ def updateImages():
             el = repr(traceback.format_exception(exc_type, exc_value, exc_traceback))
             logger.error('Error processing images ' + el)
 
+    lNeededImages = g_RequiredImages
+    if lNeededImages is None:
+        lImagesUrl = EngineEndpoint + '/subscriptions/' + TenantID + '/GetImages'
+        logger.debug(lImagesUrl)
+        r = requests.get(lImagesUrl)
+        if r.status_code != requests.codes.ok :
+            logger.debug("GET Images call failed ")
+            return
+        lNeededImages = r.json()
+        logger.debug("updateImages: Required Images has been retrieved from master pull")
+    else:
+        logger.debug("updateImages: Required Images has been set from master api")
 
-    lImagesUrl = EngineEndpoint + '/subscriptions/' + TenantID + '/GetImages'
-    logger.debug(lImagesUrl)
-    r = requests.get(lImagesUrl)
-    if r.status_code != requests.codes.ok :
-        logger.debug("GET Images call failed ")
-        return
-
-    for lImage in r.json():
+    for lImage in lNeededImages:
         logger.debug('Required Image Name ' + lImage)
         #lRequiredRepo = lImage.split(":")[0]
         if lLocalImages.has_key(lImage):
@@ -606,7 +628,7 @@ def updateImagesThread():
         try:
             updateImages()
         except:
-            logger.error('********************************************* UpdateImages encountered an exception')
+            logger.error('Error processing updateImages')
         logger.debug( '=============================================== UpdateImages Completed')
         
 
