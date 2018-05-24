@@ -1,0 +1,12 @@
+[Unit]
+Description=Duplo Agent service
+
+[Service]
+Type=simple
+ExecStart=/usr/local/src/AgentV2/flask/bin/python /usr/local/src/AgentV2/NetworkAgentV2.py
+Restart=on-failure
+StartLimitBurst=3
+StartLimitInterval=60s
+
+[Install]
+WantedBy=multi-user.target
