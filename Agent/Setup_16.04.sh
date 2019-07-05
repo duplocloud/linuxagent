@@ -196,7 +196,7 @@ case $OS in
          16*)
              ubuntu16PlusInstall
              ;;
-         17*)
+         18*)
              ubuntu16PlusInstall
              ;;
       esac 
