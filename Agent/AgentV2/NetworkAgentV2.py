@@ -458,52 +458,14 @@ def UpdateMinionState():
     lSubnet = request.json['Subnet']
     lMinionName = request.json['Name']
     lMode = request.json['TunnelMode']
-    val = subprocess.check_output(["sudo","brctl", "show"])
-    lOut = val.decode("utf-8")
-    if 'bridge0' in lOut:
-        logger.debug('Bridge0 exists')
-    else:
-        logger.debug('Adding bridge0')
-        subprocess.check_output(["sudo", "brctl", "addbr", "bridge0"])
 
-    logger.debug('Minion ' + lMinionName + ' Subnet should be ' + lSubnet + ' TunnelMode ' + lMode)
-    val = subprocess.check_output(["ip","addr", "show", "bridge0"])
-    lStatus = val.decode("utf-8")
-    if lSubnet in lStatus:
-            logger.debug('Bridge is UP, no new config needed')
-    else:
-        logger.debug('Bridge needs config ' + lStatus)
-        subprocess.check_output(["sudo","ip","link","set","dev","bridge0","up"])
-        subprocess.check_output(["sudo","ip","addr","flush","dev","bridge0"])
-        subprocess.check_output(["sudo","ip","addr","add",lSubnet,"dev","bridge0"])
-        subprocess.check_output(["sudo","ip","link","set","dev","bridge0","up"])
-        # Restart Dockers
-        subprocess.check_output(["sudo","service","docker","restart"])
-        time.sleep(8)
-    
-    if request.json['NwProvider'].lower() == 'custom' :
-        logger.debug('Network provider is custom')
-    elif request.json['NwProvider'].lower() == 'default' :
-        logger.debug('Network provider is default')
-        NetworkProvider = 'default'
-    else :
-        logger.debug('Unknown Network Provider')
-        return jsonify({}), 201
+    NetworkProvider = 'default'
 
-    logger.debug('Current value of Network prov ' + NetworkProvider)
     RegistryToken = request.json['RegistryToken']
     if TenantID == 'Empty':
         TenantID = request.json['TenantID']
         EngineEndpoint = request.json['EngineEndpoint']    
 
-    if request.json['TunnelMode'].lower() == 'udp':
-        g_udpmode = True;
-        logger.debug('UDP Mode Tunnels')
-        UpdateUdpDaemon()
-    else:
-        logger.debug('GRE Mode Tunnels') 
-    
-    updateNatRules(lSubnet)
     logger.debug(request.json)
     if 'Images' in request.json:
         logger.debug('UpdateMinionState: Required Images has been set')
@@ -822,10 +784,6 @@ def main():
        logger.debug('Daemon on Linux Distro %s is not supported...'% linuxDistro)
     
 
-    logger.debug('Launching Topology update Thread')
-    thread = Thread(target = updateTopologyThread, args = [])
-    thread.setDaemon(True)
-    thread.start()		
    
     logger.debug('Launching Image update Thread')
     lImagesthrd = Thread(target = updateImagesThread, args = [])
