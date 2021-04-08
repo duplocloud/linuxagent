@@ -504,6 +504,9 @@ def downloadImage(aInImageName):
 
     headers = { 'X-Registry-Auth' : RegistryToken }
     r = requests.post(lImageDwldUrl, data=aInImageName, headers=headers)
+
+    if aInImageName.count("/") <= 1:
+        r = requests.post(lImageDwldUrl, data=aInImageName)
         
     logger.debug('Finished downloading repo ' + aInImageName)
 
