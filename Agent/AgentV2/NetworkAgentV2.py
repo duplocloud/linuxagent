@@ -578,7 +578,7 @@ def pruneImages():
 
 
 def updateImagesThread():
-    lCount = 7200
+    lCount = 0
     while(True):
         time.sleep(12)
 
