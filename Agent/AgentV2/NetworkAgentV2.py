@@ -505,10 +505,13 @@ def downloadImage(aInImageName):
     headers = { 'X-Registry-Auth' : RegistryToken }
     r = requests.post(lImageDwldUrl, data=aInImageName, headers=headers)
 
-    if aInImageName.count("/") <= 1:
+    if r.ok:
+        logger.debug('Finished downloading repo ' + aInImageName)
+    else:
+        logger.debug('image download failed with return code and message' + str(r.status_code) + " " + str(r.json()))
+        logger.debug('Trying image download without docker creds for image - ' + aInImageName)
         r = requests.post(lImageDwldUrl, data=aInImageName)
-        
-    logger.debug('Finished downloading repo ' + aInImageName)
+        logger.debug('image download without docker creds status return code and message' + str(r.status_code) + " " + str(r.json()))
 
 
 def updateImages():
