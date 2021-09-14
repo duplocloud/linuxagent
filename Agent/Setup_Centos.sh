@@ -24,7 +24,7 @@ getOSType () {
 }
 
 getOSType
-echo $OS $VER
+echo "OS=$OS VER=$VER"
 
 
 #
@@ -40,14 +40,15 @@ AGENT_DIR='AgentV2'
 # Step 1: Install Docker and setup docker bridge
 #
 echo; echo;
-echo "--------------------------$OS $VER-------------------------------------0"
+echo "--------------------------OS=$OS VER=$VER-------------------------------------0"
 echo "Step 1: Install Docker and setup docker bridge";
-echo "--------------------------$OS $VER-------------------------------------1"
+echo "--------------------------OS=$OS VER=$VER-------------------------------------1"
 echo; echo;
 
 if [ "$OS" = "centos" ]; then
   echo "Centos Installing docker"
   sudo yum  update
+  sudo yum install -y git wget curl net-tools vim
   sudo yum install -y yum-utils
   sudo yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo
   sudo yum install docker-ce docker-ce-cli containerd.io
@@ -60,7 +61,7 @@ if [ "$OS" = "centos" ]; then
   sudo yum  -q -y install python-virtualenv
   sudo yum  -q -y install gcc
 
-elif   [ "$OS" = "Ubuntu" ]; then
+elif  [ "$OS" = "Ubuntu" ]; then
   echo "Ubuntu Installing docker"
   curl -sSL https://get.docker.com/ | sudo sh
   echo "Ubuntu Installing Container Management Service"
@@ -79,7 +80,7 @@ elif   [ "$OS" = "Ubuntu" ]; then
   fi
 
 else
-    echo "Uknown $OS $VER "
+    echo "Uknown OS=$OS VER=$VER "
 fi
 
 #if [ -z "$options" ]; then
@@ -99,9 +100,9 @@ echo "=================================="
 # Step 2: Check if Agent directory exists if not create the directory
 #
 echo; echo;
-echo "--------------------------$OS $VER-------------------------------------1"
+echo "--------------------------OS=$OS VER=$VER-------------------------------------1"
 echo "Step 2: Check if Agent directory exists if not create the directory";
-echo "--------------------------$OS $VER-------------------------------------2"
+echo "--------------------------OS=$OS VER=$VER-------------------------------------2"
 echo; echo;
 
 if [ -z "$INSTALLDIR" ]; then
@@ -129,9 +130,9 @@ DAEMON_DEFAULT_FILE="/etc/default/$AGENT"
 # installing
 #
 echo; echo;
-echo "--------------------------$OS $VER-------------------------------------2"
+echo "--------------------------OS=$OS VER=$VER-------------------------------------2"
 echo "Step 3: Check if Agent is running. Shutdown Agent before installing";
-echo "--------------------------$OS $VER-------------------------------------3"
+echo "--------------------------OS=$OS VER=$VER-------------------------------------3"
 echo; echo;
 
 echo "Check if $AGENT is running"
@@ -178,9 +179,9 @@ rm -rf flask
 # Step 5: Fetch Agent code from the repository
 #
 echo; echo;
-echo "--------------------------$OS $VER-------------------------------------4"
+echo "--------------------------OS=$OS VER=$VER-------------------------------------4"
 echo "Step 5: Fetch Agent code from the repository"
-echo "--------------------------$OS $VER-------------------------------------5";
+echo "--------------------------OS=$OS VER=$VER-------------------------------------5";
 echo; echo;
 
 curl -H "Accept: application/vnd.github.v3.raw" -O -L https://api.github.com/repos/duplocloud/linuxagent/contents/Agent/AgentV2/NetworkAgentV2.py
@@ -218,11 +219,13 @@ echo "PYTHON_PATH=$PYTHON_PATH" | sudo tee --append $DAEMON_DEFAULT_FILE > /dev/
 
 centosInstall () {
    echo "Performing Centos Install "
-   cd /etc/init/
+   cd /lib/systemd/system
    echo $PWD
-   curl -H "Accept: application/vnd.github.v3.raw" -O -L https://api.github.com/repos/duplocloud/linuxagent/contents/Agent/udptunnel.conf
-   curl -H "Accept: application/vnd.github.v3.raw" -O -L https://api.github.com/repos/duplocloud/linuxagent/contents/Agent/NetworkAgent.conf
-   sudo start NetworkAgent
+   curl -H "Accept: application/vnd.github.v3.raw" -O -L https://api.github.com/repos/duplocloud/linuxagent/contents/Agent/NetworkAgent.service
+   sudo systemctl daemon-reload
+   sudo systemctl enable NetworkAgent.service
+   sudo systemctl start NetworkAgent.service
+   sudo systemctl status NetworkAgent.service
 }
 
 ubuntuInstall () {
@@ -245,6 +248,7 @@ ubuntu16PlusInstall () {
    sudo systemctl daemon-reload
    sudo systemctl enable NetworkAgent.service
    sudo systemctl start NetworkAgent.service
+   sudo systemctl status NetworkAgent.service
 }
 
 #
@@ -259,11 +263,13 @@ ubuntu16PlusInstall () {
 # Step 6 Setup the Network Agent Daemon and launch
 #
 echo; echo;
-echo "--------------------------$OS $VER-------------------------------------5"
+echo "--------------------------OS=$OS VER=$VER-------------------------------------5"
 echo "Step 6 Setup the Network Agent Daemon and launchy"
-echo "--------------------------$OS $VER-------------------------------------6"
+echo "--------------------------OS=$OS VER=$VER-------------------------------------6"
 echo; echo;
-echo $OS $VER
+
+echo "OS=$OS VER=$VER"
+
 case $OS in
    "Ubuntu")
       case $VER in
@@ -293,4 +299,4 @@ case $OS in
       ;;
 esac
 
-echo "--------------------------$OS $VER-------------------------------------6"
+echo "--------------------------OS=$OS VER=$VER-------------------------------------6"
