@@ -8,10 +8,10 @@
 
 ```
 ### centos 7
-* us-west2 =  ami-0e15007c2dc498cf8  
+* Successfully created ami-00e03b2804b0c1cc7 from instance i-093f691e8d5d9b0ee.
+* us-west2 =  ami-00e03b2804b0c1cc7 
 ```
  sudo ./Setup_Centos.sh
-
-
+ 
 
 ```
