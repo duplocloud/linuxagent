@@ -483,7 +483,7 @@ def daemonizeUbuntu():
     process_id = os.getpid()
     logger.debug('Process ID after setid(): %s...' % str(process_id))
 
-    pidfile = open('/var/run/NetworkAgent', 'w')
+    pidfile = open('/var/run/NetworkAgent.pid', 'w')
     pidfile.write("%d" % process_id)
     pidfile.close()
 

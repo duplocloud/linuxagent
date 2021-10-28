@@ -18,7 +18,7 @@ User=root
 Group=root
 WorkingDirectory=/usr/local/src/AgentV2
 ExecStart=/bin/bash -c 'PYTHONPATH=/usr/local/src/AgentV2/flask/bin; PATH=$$PYTHONPATH:$$PATH; /usr/local/src/AgentV2/flask/bin/python /usr/local/src/AgentV2/NetworkAgentV2.py&'
-PIDFile=/var/run/$DAEMON_NAME
+PIDFile=NetworkAgent.pid
 Restart=on-failure
 
 [Install]
