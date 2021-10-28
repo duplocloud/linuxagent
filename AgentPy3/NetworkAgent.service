@@ -17,7 +17,8 @@ EnvironmentFile=-/etc/default/NetworkAgentV2
 User=root
 Group=root
 WorkingDirectory=/usr/local/src/AgentV2
-ExecStart=/bin/bash -c 'PYTHONPATH=/usr/local/src/AgentV2/flask/bin; PATH=$$PYTHONPATH:$$PATH; /usr/local/src/AgentV2/flask/bin/python3 /usr/local/src/AgentV2/NetworkAgentV2.py &'
+ExecStart=/bin/bash -c 'PYTHONPATH=/usr/local/src/AgentV2/flask/bin;PATH=$$PYTHONPATH:$$PATH;fold=`pwd`;cd /usr/local/src/AgentV2/;virtualenv flask;cd $fold;/usr/local/src/AgentV2/flask/bin/python3 /usr/local/src/AgentV2/NetworkAgentV2.py &'
+ExecReload=/bin/bash -c 'PYTHONPATH=/usr/local/src/AgentV2/flask/bin;PATH=$$PYTHONPATH:$$PATH;fold=`pwd`;cd /usr/local/src/AgentV2/;virtualenv flask;cd $fold;/usr/local/src/AgentV2/flask/bin/python3 /usr/local/src/AgentV2/NetworkAgentV2.py &'
 PIDFile=NetworkAgent.pid
 Restart=on-failure
 

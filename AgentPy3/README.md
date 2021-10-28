@@ -2,9 +2,11 @@
 
 ### ubuntu 20 py3 
 ```
+
 curl -H "Accept: application/vnd.github.v3.raw" -O -L https://api.github.com/repos/duplocloud/linuxagent/contents/AgentPy3/Setup.sh
 chmod +x ./Setup.sh
 sudo bash ./Setup.sh
+ tail -f /var/log/NetworkAgent.log
  
 
 ```
