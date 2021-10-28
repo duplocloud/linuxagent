@@ -32,5 +32,7 @@ service NetworkAgent start
 tail -f /var/log/NetworkAgent.log
 cat /run/NetworkAgent.pid
 
+ systemctl daemon-reload
+
 
 ```
