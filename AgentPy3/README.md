@@ -6,7 +6,13 @@
 curl -H "Accept: application/vnd.github.v3.raw" -O -L https://api.github.com/repos/duplocloud/linuxagent/contents/AgentPy3/Setup.sh
 chmod +x ./Setup.sh
 sudo bash ./Setup.sh
- tail -f /var/log/NetworkAgent.log
+systemctl daemon-reload
+service NetworkAgent status
+service NetworkAgent stop
+service NetworkAgent start
+service NetworkAgent status
+
+tail -f /var/log/NetworkAgent.log
  
 
 ```
