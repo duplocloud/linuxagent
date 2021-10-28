@@ -273,9 +273,7 @@ case $OS in
     "centos")
         centosInstall
          ;;
-    esac
-         ;;
-   *)
+    *)
       echo "Unsupport OS: $OS, Version: $VER"
       ;;
 esac
