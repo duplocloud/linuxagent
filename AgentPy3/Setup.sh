@@ -199,7 +199,8 @@ chmod a+x NetworkAgentV2.py
 # See "systemctl status NetworkAgent.service" and "journalctl -xe" for details.
 # /bin/bash -c 'PYTHONPATH=/usr/local/src/AgentV2/flask/bin; PATH=$$PYTHONPATH:$$PATH; /usr/local/src/AgentV2/flask/bin/python /usr/local/src/AgentV2/NetworkAgentV2.py'
 
-
+#pip install flask requests  python-pytun docker
+#pip install --upgrade python-iptables
 virtualenv flask
 yes | flask/bin/pip install flask
 yes | flask/bin/pip install requests
