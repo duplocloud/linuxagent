@@ -126,13 +126,13 @@ def updateTunnels(aInRemoteMinions, aInLocalMinion):
 
     lLocalAddr = aInLocalMinion.directIpAddress
     for lKey in lExpectedTuns:
-        if not lCurrentTuns.has_key(lKey):
+        if  lKey not in  lCurrentTuns:
             logger.debug('Adding Tunnel ' + lKey)
             addTunnel(lKey, lExpectedTuns[lKey].subnet, lLocalAddr, lExpectedTuns[lKey].directIpAddress)
             logger.debug('Successfully Added Tunnel ' + lKey + ' +++++++++++++++++++++++++++++++++++++++++')
 
     for lKey in lCurrentTuns:
-        if not lExpectedTuns.has_key(lKey):
+        if lKey not in  lExpectedTuns:
             try:
                 logger.debug('Unwanted tunnel ' + lKey)
                 deleteTunnel(lKey)
@@ -329,15 +329,22 @@ def updateImages():
         try:
             for lLocalImg in lLocalImgTags['RepoTags']:
                 try:
-                    if not lLocalImages.has_key(lLocalImg):
+                    if lLocalImg not in lLocalImages:
                         logger.debug('Exists image name ' + lLocalImg)
                         lLocalImages[lLocalImg] = lLocalImg
-                except:
-                    logger.error('Error processing a tag in img ')
-        except:
-            exc_type, exc_value, exc_traceback = sys.exc_info()
-            el = repr(traceback.format_exception(exc_type, exc_value, exc_traceback))
-            logger.error('Error processing images ' + el)
+                except Exception as e:
+                    nfltErr = "Error 1 processing a tag in img: %s " % e
+                    logger.error(nfltErr)
+                    exc_type, exc_value, exc_traceback = sys.exc_info()
+                    el = repr(traceback.format_exception(exc_type, exc_value, exc_traceback))
+                    logger.error(nfltErr + el)
+        except Exception as e:
+                nfltErr = "Error 2 processing images : %s " % e
+                logger.error(nfltErr)
+                exc_type, exc_value, exc_traceback = sys.exc_info()
+                el = repr(traceback.format_exception(exc_type, exc_value, exc_traceback))
+                logger.error(nfltErr + el)
+
 
     lNeededImages = g_RequiredImages
     if lNeededImages is None:
@@ -355,16 +362,18 @@ def updateImages():
     for lImage in lNeededImages:
         logger.debug('Required Image Name ' + lImage)
         # lRequiredRepo = lImage.split(":")[0]
-        if lLocalImages.has_key(lImage):
+        if lImage in lLocalImages:
             logger.debug('Required image exists ' + lImage)
         else:
             logger.debug('++++++++++ Need to download Image ' + lImage)
             try:
                 downloadImage(lImage)
-            except:
+            except Exception as e:
+                nfltErr = "Error 3 The download error was : %s " % e
+                logger.error( nfltErr)
                 exc_type, exc_value, exc_traceback = sys.exc_info()
                 el = repr(traceback.format_exception(exc_type, exc_value, exc_traceback))
-                logger.error('The download error was ' + el)
+                logger.error(nfltErr + el)
 
 
 def pruneImages():
@@ -374,8 +383,12 @@ def pruneImages():
         filters = {'dangling': '0'}
         client.images.prune(filters)
         logger.debug('Finished pruning')
-    except:
-        logger.debug('Error pruning images')
+    except Exception as e:
+        nfltErr = "Error 4 pruning images 10 : %s " % e
+        logger.error( nfltErr)
+        exc_type, exc_value, exc_traceback = sys.exc_info()
+        el = repr(traceback.format_exception(exc_type, exc_value, exc_traceback))
+        logger.error(nfltErr + el)
 
 
 def updateImagesThread():
@@ -388,13 +401,21 @@ def updateImagesThread():
             if lCount >= 7200:
                 pruneImages()
                 lCount = 0
-        except:
-            logger.debug('Prune images failed')
+        except  Exception as e:
+            nfltErr = "Error 5 pruning images : %s " % e
+            logger.error( nfltErr)
+            exc_type, exc_value, exc_traceback = sys.exc_info()
+            el = repr(traceback.format_exception(exc_type, exc_value, exc_traceback))
+            logger.error(nfltErr + el)
 
         try:
             updateImages()
-        except:
-            logger.error('Error processing updateImages')
+        except  Exception as e:
+            nfltErr = "Error 6 pruning images : %s" % e
+            logger.error(nfltErr + nfltErr)
+            exc_type, exc_value, exc_traceback = sys.exc_info()
+            el = repr(traceback.format_exception(exc_type, exc_value, exc_traceback))
+            logger.error(nfltErr+ el)
         logger.debug('=============================================== UpdateImages Completed')
 
 
@@ -443,42 +464,6 @@ def setLogger():
 
 
 def daemonizeUbuntu():
-    # Fork, creating a new process for the child.
-    '''
-    #
-    # NOTE: Ubuntu upstart for some reason does not like fork
-    #
-    # Even with 'expect fork' stanza in the start up script
-    # ubuntu upstart seems to track incorrect PID. As a result
-    # daemon stop does not work
-    #
-    # Experimented with 'expect daemon' that didn't help
-    # Disabling fork seems to work fine...
-    #
-    process_id = os.fork()
-
-    if process_id < 0:
-        # Fork error.  Exit badly.
-        sys.exit(1)
-        logger.debug('Fork Error')
-    elif process_id != 0:
-        # This is the parent process.  Exit.
-        sys.exit(0)
-    # This is the child process.  Continue.
-
-    logger.debug('Process ID before setid(): %s' % str(process_id))
-    # Stop listening for signals that the parent process receives.
-    # This is done by getting a new process id.
-    # setpgrp() is an alternative to setsid().
-    # setsid puts the process in a new parent group and detaches its
-    # controlling terminal.
-    process_id = os.setsid()
-    if process_id == -1:
-        # Uh oh, there was a problem.
-        logger.debug('Set ID Failed')
-        sys.exit(1)
-
-    '''
 
     process_id = os.getpid()
     logger.debug('Process ID after setid(): %s...' % str(process_id))
