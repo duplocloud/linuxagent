@@ -419,19 +419,7 @@ def updateImagesThread():
         logger.debug('=============================================== UpdateImages Completed')
 
 
-def getOptions():
-    name = None
 
-    parser = argparse.ArgumentParser(description='Network Agent ')
-    parser.add_argument('-m', '--mode',
-                        help='Network Agent overlay mode',
-                        type=str, default='gre')
-
-    args = vars(parser.parse_args())
-
-    lmode = args.get('mode', 'gre')
-
-    return lmode
 
 
 def setLogger():
@@ -444,14 +432,6 @@ def setLogger():
 
     logger.addHandler(fh)
     logger.setLevel(logging.DEBUG)
-
-    # fh = logging.FileHandler("/var/log/NetworkAgent.log", "w")
-    # fh.setLevel(logging.DEBUG)
-    # logger.addHandler(fh)
-
-    #
-    # Detach stdout, stdin and stderr for daemonizing
-    #
     f = open('/dev/null', 'w')
     sys.stdout = f
     sys.stderr = f
@@ -464,29 +444,33 @@ def setLogger():
 
 
 def daemonizeUbuntu():
-
     process_id = os.getpid()
     logger.debug('Process ID after setid(): %s...' % str(process_id))
+    # os.popen( process_id+ " > /var/run/NetworkAgent.pid ; chmod +x  /var/run/NetworkAgent.pid")
 
-    pidfile = open('/var/run/NetworkAgent.pid', 'w')
+    #
+    path='/var/run/NetworkAgent.pid'
+    pidfile = open(path, 'w')
     pidfile.write("%d" % process_id)
     pidfile.close()
-
-    # Set umask to default to safe file permissions when running
-    # as a root daemon. 027 is an octal number.
+    os.chmod(path, 0o444)
+    #
+    # # Set umask to default to safe file permissions when running
+    # # as a root daemon. 027 is an octal number.
     os.umask(0o27)
-
-    # Change to a known directory.  If this isn't done, starting
-    # a daemon in a subdirectory that needs to be deleted results
-    # in "directory busy" errors.
-    # On some systems, running with chdir("/") is not allowed,
-    # so this should be settable by the user of this library.
+    #
+    # # Change to a known directory.  If this isn't done, starting
+    # # a daemon in a subdirectory that needs to be deleted results
+    # # in "directory busy" errors.
+    # # On some systems, running with chdir("/") is not allowed,
+    # # so this should be settable by the user of this library.
     os.chdir('/')
 
     logger.debug('Daemonization complete')
 
 
 def getLinuxDistro():
+    # todo: for centos
     # dist = platform.dist()
     # return dist[0]
     return "Ubuntu"
@@ -495,29 +479,9 @@ def getLinuxDistro():
 def main():
     global logger
     logger = setLogger()
-
-    lmode = getOptions()
-
-    if lmode == "udp":
-        global g_udpmode
-        g_udpmode = True
-        logger.debug('Network Agent in UDP Mode')
-    else:
-        logger.debug('Network Agent in GRE mode')
-
+    logger.debug('Network Agent in GRE mode')
     linuxDistro = getLinuxDistro()
     logger.debug('Create Daemon on %s' % linuxDistro)
-
-    #
-    # Method to start daemon varies on different linux
-    # distro. Get the linux distro and daemonize as appropriate
-    #
-    # on ubunut: use upstart
-    #   * copy NeworkAgent.conf to /etc/init
-    #   * Create defaults in /etc/default
-    #   * start daemon using 'sudo start daemon'
-    #
-
     if linuxDistro == 'Ubuntu':
         logger.debug('Create Daemon on %s' % linuxDistro)
         daemonizeUbuntu()
