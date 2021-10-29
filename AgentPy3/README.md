@@ -6,6 +6,7 @@
 curl -H "Accept: application/vnd.github.v3.raw" -O -L https://api.github.com/repos/duplocloud/linuxagent/contents/AgentPy3/Setup.sh
 chmod +x ./Setup.sh
 sudo bash ./Setup.sh
+
 systemctl daemon-reload
 service NetworkAgent status
 service NetworkAgent stop
@@ -14,7 +15,8 @@ service NetworkAgent status
 
 tail -f /var/log/NetworkAgent.log
  
-
+#vi /lib/systemd/system/NetworkAgent.service  
+#vi /usr/local/src/AgentV2/NetworkAgentV2.py
 ```
 ### centos 7 not tested py3
 * Successfully created ami-00e03b2804b0c1cc7 from instance i-093f691e8d5d9b0ee.
