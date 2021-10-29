@@ -1,7 +1,5 @@
 #!/bin/bash
 
-
-
 #
 # Agent variables
 #
@@ -65,7 +63,7 @@ py3Install () {
    sudo systemctl daemon-reload
    sudo systemctl enable NetworkAgent.service
    sudo systemctl start NetworkAgent.service
-   #sudo systemctl status NetworkAgent.service
+   sudo systemctl status NetworkAgent.service &
 
 }
 
