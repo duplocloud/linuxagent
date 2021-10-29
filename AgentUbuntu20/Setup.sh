@@ -45,14 +45,14 @@ py3Install () {
 
    #########
    cd $DAEMON_DIR
-   curl -H "Accept: application/vnd.github.v3.raw" -O -L https://api.github.com/repos/duplocloud/linuxagent/contents/AgentPy3/NetworkAgentV2.py
+   curl -H "Accept: application/vnd.github.v3.raw" -O -L https://api.github.com/repos/duplocloud/linuxagent/contents/AgentUbuntu20/NetworkAgentV2.py
    chmod a+x NetworkAgentV2.py
    cat NetworkAgentV2.py
 
    #########
    cd /lib/systemd/system
    echo $PWD
-   curl -H "Accept: application/vnd.github.v3.raw" -O -L https://api.github.com/repos/duplocloud/linuxagent/contents/AgentPy3/NetworkAgent.service
+   curl -H "Accept: application/vnd.github.v3.raw" -O -L https://api.github.com/repos/duplocloud/linuxagent/contents/AgentUbuntu20/NetworkAgent.service
    ######
    ls -alt NetworkAgent.service
    ls -alt $DAEMON_DIR
