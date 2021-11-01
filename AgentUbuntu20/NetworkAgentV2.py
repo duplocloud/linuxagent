@@ -402,7 +402,7 @@ def updateImagesThread():
                 pruneImages()
                 lCount = 0
         except  Exception as e:
-            nfltErr = "Error 5 pruning images : %s " % e
+            nfltErr = "Error 5 updateImagesThread pruning images : %s " % e
             logger.error( nfltErr)
             exc_type, exc_value, exc_traceback = sys.exc_info()
             el = repr(traceback.format_exception(exc_type, exc_value, exc_traceback))
@@ -411,11 +411,11 @@ def updateImagesThread():
         try:
             updateImages()
         except  Exception as e:
-            nfltErr = "Error 6 pruning images : %s" % e
+            nfltErr = "Error 6 updateImagesThread updateImages : %s" % e
             logger.error(nfltErr + nfltErr)
-            exc_type, exc_value, exc_traceback = sys.exc_info()
-            el = repr(traceback.format_exception(exc_type, exc_value, exc_traceback))
-            logger.error(nfltErr+ el)
+            # exc_type, exc_value, exc_traceback = sys.exc_info()
+            # el = repr(traceback.format_exception(exc_type, exc_value, exc_traceback))
+            # logger.error(nfltErr+ el)
         logger.debug('=============================================== UpdateImages Completed')
 
 
