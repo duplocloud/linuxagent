@@ -83,12 +83,13 @@ installDependancies () {
 
   if [ "$OS" = "centos" ]; then
     echo "Centos Installing docker"
-    sudo yum  update
-    sudo yum install -y git wget curl net-tools vim
-    sudo yum install -y yum-utils
+    sudo yum  update  -q -y
+    sudo yum install -q -y git wget curl net-tools vim
+    sudo yum install -q -y yum-utils
     sudo yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo
-    sudo yum install docker-ce docker-ce-cli containerd.io
+    sudo yum install -q -y docker-ce docker-ce-cli containerd.io
 
+    sudo sed -i 's#-H fd://#-H fd:// -H tcp://0.0.0.0:4243#' /lib/systemd/system/docker.service
     sudo systemctl enable docker
     sudo systemctl start docker
     sudo systemctl status docker
@@ -104,15 +105,16 @@ installDependancies () {
 
   elif [ "$OS" = "amzn" ]; then
     echo "amzn Amazon Linux 2 Installing docker"
-    sudo yum update -y
+    sudo yum update -q -y
     sudo amazon-linux-extras install docker
-    sudo yum install -y docker
+    sudo yum install -q -y docker
+
     sudo service docker start
     sudo usermod -a -G docker ec2-user
     docker info
 
-    sudo yum install -y git wget curl net-tools vim
-    sudo yum install -y yum-utils
+    sudo yum install -q -y git wget curl net-tools vim
+    sudo yum install -q -y yum-utils
     # sudo yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo
     # sudo yum install docker-ce docker-ce-cli containerd.io
 
@@ -122,7 +124,7 @@ installDependancies () {
     sudo docker ps
 
     echo "amzn Amazon Linux 2 Installing Container Management Service"
-    sudo yum   update
+    sudo yum   update   -q -y
     sudo yum  -q -y install bridge-utils
     sudo yum  -q -y install python-dev
     sudo yum  -q -y install python-pip
