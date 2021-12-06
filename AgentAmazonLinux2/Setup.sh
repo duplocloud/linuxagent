@@ -94,9 +94,10 @@ installDependancies () {
     sudo systemctl start docker
     sudo systemctl status docker
     sudo docker ps
+    sudo docker info
 
     echo "Centos Installing Container Management Service"
-    sudo yum   update
+    sudo yum   update  -q -y
     sudo yum  -q -y install bridge-utils
     sudo yum  -q -y install python-dev
     sudo yum  -q -y install python-pip
@@ -108,20 +109,17 @@ installDependancies () {
     sudo yum update -q -y
     sudo amazon-linux-extras install docker
     sudo yum install -q -y docker
-
-    sudo service docker start
     sudo usermod -a -G docker ec2-user
-    docker info
 
     sudo yum install -q -y git wget curl net-tools vim
     sudo yum install -q -y yum-utils
-    # sudo yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo
-    # sudo yum install docker-ce docker-ce-cli containerd.io
 
-    # sudo systemctl enable docker
-    # sudo systemctl start docker
-    # sudo systemctl status docker
+    sudo sed -i 's#-H fd://#-H fd:// -H tcp://0.0.0.0:4243#' /lib/systemd/system/docker.service
+    sudo systemctl enable docker
+    sudo systemctl start docker
+    sudo systemctl status docker
     sudo docker ps
+    sudo docker info
 
     echo "amzn Amazon Linux 2 Installing Container Management Service"
     sudo yum   update   -q -y
@@ -130,7 +128,6 @@ installDependancies () {
     sudo yum  -q -y install python-pip
     sudo yum  -q -y install python-virtualenv
     sudo yum  -q -y install gcc
-    #statements
   elif  [ "$OS" = "Ubuntu" ]; then
     echo "Ubuntu Installing docker"
     curl -sSL https://get.docker.com/ | sudo sh
