@@ -107,7 +107,7 @@ installDependancies () {
   elif [ "$OS" = "amzn" ]; then
     echo "amzn Amazon Linux 2 Installing docker"
     sudo yum update -q -y
-    sudo amazon-linux-extras install docker
+    sudo amazon-linux-extras install -q -y docker
     sudo yum install -q -y docker
     sudo usermod -a -G docker ec2-user
 
