@@ -1,0 +1,28 @@
+[Unit]
+Description="NetworkAgent daemon"
+Wants=network.target network-online.target autofs.service
+After=network.target network-online.target autofs.service
+
+[Service]
+LimitNOFILE=65536
+LimitNPROC=65536
+Type=simple
+WorkingDirectory=/usr/local/src/AgentV2
+Environment=VIRTUAL_ENV=$WorkingDirectory/flask
+Environment=PATH=$VIRTUAL_ENV/bin:$PATH
+Environment=PYTHONPATH=$VIRTUAL_ENV/bin:$WorkingDirectory
+Environment=DEFAULTS=NetworkAgentV2
+Environment=DAEMON_DIR=$WorkingDirectory
+Environment=DAEMON=$DAEMON_DIR/NetworkAgentV2.py
+Environment=DAEMON_NAME=NetworkAgent
+EnvironmentFile=-/etc/default/NetworkAgentV2
+User=root
+Group=root
+UMask=0007
+ExecStart=/bin/bash -c '/usr/local/src/AgentV2/flask/bin/python /usr/local/src/AgentV2/NetworkAgentV2.py  '
+ExecReload=/bin/bash -c '/usr/local/src/AgentV2/flask/bin/python /usr/local/src/AgentV2/NetworkAgentV2.py '
+PIDFile=/var/run/NetworkAgent.pid
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target
