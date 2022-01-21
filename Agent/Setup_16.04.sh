@@ -119,6 +119,7 @@ yes | flask/bin/pip install requests
 yes | flask/bin/pip install python-pytun 
 yes | flask/bin/pip install --upgrade python-iptables
 yes | flask/bin/pip install docker
+yes | flask/bin/pip install boto3
 
 echo "==========================="
 echo "     Agent installed      " 
