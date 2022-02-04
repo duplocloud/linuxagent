@@ -1,4 +1,4 @@
-#!/usr/bin/env python 
+#!/usr/bin/env python
 import requests
 from flask import Flask, jsonify
 from flask import request
@@ -19,18 +19,19 @@ import platform
 import docker
 from logging import handlers, Formatter
 import base64
-import boto3 #/usr/local/src/AgentV2/flask/bin/pip  install boto3
+import boto3  # /usr/local/src/AgentV2/flask/bin/pip  install boto3
 
 app = Flask(__name__)
 
 g_udpmode = False
-logger=None
+logger = None
 currentContainers = {}
 TenantID = 'Empty'
 RegistryToken = 'Empty'
 EngineEndpoint = 'Empty'
 NetworkProvider = 'custom'
-g_RequiredImages=None
+g_RequiredImages = None
+
 
 class Minion:
     def __init__(self, name, subnet, directAddress, directIpAddr):
@@ -50,48 +51,56 @@ class Minion:
         else:
             val = True
 
-        if val :
-            logger.debug('Minions ' + self.name + ' and ' + minion.name + ' are equal')
+        if val:
+            logger.debug('Minions ' + self.name + ' and ' +
+                         minion.name + ' are equal')
         else:
-            logger.debug('Minions ' + self.name + ' and ' + minion.name + ' are not equal')
+            logger.debug('Minions ' + self.name + ' and ' +
+                         minion.name + ' are not equal')
 
         return val
 
     def log(self):
-        val = self.name + ' ' + self.subnet + ' ' + self.directAddress + ' ' + self.directIpAddress
+        val = self.name + ' ' + self.subnet + ' ' + \
+            self.directAddress + ' ' + self.directIpAddress
         return val
+
 
 def addRoute(aInSubnet, aInTunnelName):
     lSubnetParts = aInSubnet.split(".")
-    lSubnet = lSubnetParts[0] + "." + lSubnetParts[1] + "." +  lSubnetParts[2] + ".0"
+    lSubnet = lSubnetParts[0] + "." + \
+        lSubnetParts[1] + "." + lSubnetParts[2] + ".0"
     logger.debug('Adding Routes to ' + lSubnet + "via " + aInTunnelName)
     # sudo route add -net 172.17.51.0 netmask 255.255.255.0 dev tun1
-    val = subprocess.check_output(["sudo", "route", "add", "-net", lSubnet, "netmask", "255.255.255.0", "dev", aInTunnelName]) 
+    val = subprocess.check_output(
+        ["sudo", "route", "add", "-net", lSubnet, "netmask", "255.255.255.0", "dev", aInTunnelName])
     if val != "":
         lStatus = val.decode("utf-8")
         logger.debug(lStatus)
 
+
 def getCurrentIpTunnels():
-    val = subprocess.check_output(["sudo","iptunnel", "show"])
+    val = subprocess.check_output(["sudo", "iptunnel", "show"])
     lStatus = val.decode("utf-8")
     lTunnels = lStatus.splitlines()
     lCurrentTuns = {}
     for lTun in lTunnels:
         lToks = lTun.split()
-        lName =  lToks[0].replace(":","")
-        if lName == 'gre0' or lName == 'tunl0' :
+        lName = lToks[0].replace(":", "")
+        if lName == 'gre0' or lName == 'tunl0':
             logger.debug('Skipping default tunnels')
-        else:	
+        else:
             logger.debug('Existing Tunnel ' + lName)
             lCurrentTuns[lName] = lName
-    
+
     return lCurrentTuns
+
 
 def getCurrentUdpTunnels():
     logger.debug('getting current tunnels')
-    lUrl = 'http://127.0.0.1:60036/udpproxy/gettunnels'    
+    lUrl = 'http://127.0.0.1:60036/udpproxy/gettunnels'
     r = requests.get(lUrl)
-    if r.status_code != requests.codes.ok :
+    if r.status_code != requests.codes.ok:
         logger.debug("GET UDP Tunnels call failed ")
         return
     lCurrentTuns = {}
@@ -100,33 +109,34 @@ def getCurrentUdpTunnels():
         lCurrentTuns[lTun] = lTun
 
     return lCurrentTuns
-	
+
 
 def getCurrentTunnels():
-     global g_udpmode
-     if g_udpmode:
-	return getCurrentUdpTunnels()
-     else:
-	return getCurrentIpTunnels()
- 
-def addUdpTunnel(aInName,aInSubnet,aInLocalAddress, aInRemoteAddress):
+    global g_udpmode
+    if g_udpmode:
+        return getCurrentUdpTunnels()
+    else:
+        return getCurrentIpTunnels()
+
+
+def addUdpTunnel(aInName, aInSubnet, aInLocalAddress, aInRemoteAddress):
     try:
         lSubnetParts = aInSubnet.split(".")
         lTunIp = "169.254.1." + lSubnetParts[2]
         logger.debug('Adding a UDP Tunnel ' + aInName)
         msg = {
             'op': "add",
-            'tunnel' : [
-            	{
-              	    'name' : aInName,
+            'tunnel': [
+                {
+                    'name': aInName,
                     'tunnelIP': lTunIp,
                     'netmask': "255.255.255.0",
                     'remoteServer': aInRemoteAddress
                 }
             ]
         }
-        
-        lUrl = 'http://127.0.0.1:60036/udpproxy/addtunnels' 
+
+        lUrl = 'http://127.0.0.1:60036/udpproxy/addtunnels'
         lData = json.dumps(msg)
         logger.debug(lData)
         headers = {'content-type': 'application/json'}
@@ -136,22 +146,27 @@ def addUdpTunnel(aInName,aInSubnet,aInLocalAddress, aInRemoteAddress):
     except:
         logger.debug('****Error in adding UDP Tunnel')
 
-def addIpTunnel(aInName,aInSubnet,aInLocalAddress, aInRemoteAddress):
-    try:		
-        subprocess.check_output(["sudo","iptunnel", "add", aInName, "mode", "gre", "local", aInLocalAddress, "remote", aInRemoteAddress]) 
+
+def addIpTunnel(aInName, aInSubnet, aInLocalAddress, aInRemoteAddress):
+    try:
+        subprocess.check_output(["sudo", "iptunnel", "add", aInName, "mode",
+                                "gre", "local", aInLocalAddress, "remote", aInRemoteAddress])
         subprocess.check_output(["sudo", "ifconfig", aInName, "up"])
         addRoute(aInSubnet, aInName)
     except:
-        logger.error('Failed to add tunnel ' + aInName + ' will try again ***************************************')
+        logger.error('Failed to add tunnel ' + aInName +
+                     ' will try again ***************************************')
         deleteTunnelInDriver(lKey)
+
 
 def addTunnel(aInName, aInSubnet, aInLocalAddress, aInRemoteAddress):
     global g_udpmode
     if g_udpmode:
-    	addUdpTunnel(aInName, aInSubnet, aInLocalAddress, aInRemoteAddress)
+        addUdpTunnel(aInName, aInSubnet, aInLocalAddress, aInRemoteAddress)
     else:
-	addIpTunnel(aInName, aInSubnet, aInLocalAddress, aInRemoteAddress)
- 	
+        addIpTunnel(aInName, aInSubnet, aInLocalAddress, aInRemoteAddress)
+
+
 def deleteUdpTunnel(aInName):
     logger.debug('Deleting tunnel' + aInName)
 
@@ -159,9 +174,9 @@ def deleteUdpTunnel(aInName):
 
         msg = {
             'op': "del",
-            'tunnel' : [
+            'tunnel': [
                 {
-                    'name' : aInName,
+                    'name': aInName,
                 }
             ]
         }
@@ -179,25 +194,28 @@ def deleteUdpTunnel(aInName):
 
 def deleteIpTunnel(aInName):
     try:
-        subprocess.check_output(["sudo","iptunnel", "del", aInName])
+        subprocess.check_output(["sudo", "iptunnel", "del", aInName])
     except:
         logger.error('Failed to delete tunnel ' + aInName)
 
+
 def deleteTunnel(aInName):
     global g_udpmode
-    if g_udpmode:   
+    if g_udpmode:
         deleteUdpTunnel(aInName)
     else:
         deleteIpTunnel(aInName)
 
+
 def updateTunnels(aInRemoteMinions, aInLocalMinion):
-    logger.debug('Begin reconciling tunnels  ======================================================')
+    logger.debug(
+        'Begin reconciling tunnels  ======================================================')
     lExpectedTuns = {}
     logger.debug('LOCAL*** ' + aInLocalMinion.log())
     lLocalAddr = aInLocalMinion.directIpAddress
     # Use the last two octets of the local and remmote IP as the tunnel name
     lLocalParts = lLocalAddr.split(".")
-    lLocalSmallName = lLocalParts[2] + "." + lLocalParts[3] 
+    lLocalSmallName = lLocalParts[2] + "." + lLocalParts[3]
     for lKey in aInRemoteMinions:
         val = aInRemoteMinions[lKey].log()
         logger.debug('REMOTE*** ' + val)
@@ -209,41 +227,45 @@ def updateTunnels(aInRemoteMinions, aInLocalMinion):
         lExpectedTuns[lTunName] = aInRemoteMinions[lKey]
 
     lCurrentTuns = getCurrentTunnels()
-    
+
     lLocalAddr = aInLocalMinion.directIpAddress
     for lKey in lExpectedTuns:
         if not lCurrentTuns.has_key(lKey):
             logger.debug('Adding Tunnel ' + lKey)
-            addTunnel(lKey, lExpectedTuns[lKey].subnet, lLocalAddr, lExpectedTuns[lKey].directIpAddress)
-            logger.debug('Successfully Added Tunnel ' + lKey + ' +++++++++++++++++++++++++++++++++++++++++')
-        
+            addTunnel(lKey, lExpectedTuns[lKey].subnet,
+                      lLocalAddr, lExpectedTuns[lKey].directIpAddress)
+            logger.debug('Successfully Added Tunnel ' + lKey +
+                         ' +++++++++++++++++++++++++++++++++++++++++')
+
     for lKey in lCurrentTuns:
         if not lExpectedTuns.has_key(lKey):
-            try:	
+            try:
                 logger.debug('Unwanted tunnel ' + lKey)
                 deleteTunnel(lKey)
             except:
                 logger.error('Failed to delete unwanted tunnel')
 
-    logger.debug('End Reconciling Tunnels ======================================================')
+    logger.debug(
+        'End Reconciling Tunnels ======================================================')
 
     return
+
 
 def addNetfilter(aInChain, aInRule, aInBlock):
     rule = iptc.Rule()
     match = rule.create_match("comment")
     match.comment = aInRule['Name']
-    
+
     rule.dst = aInRule['DestAddress']
 
     if aInRule['SrcAddress']:
-       rule.src = aInRule['SrcAddress']
+        rule.src = aInRule['SrcAddress']
     if aInRule['Protocol']:
-	rule.protocol = aInRule['Protocol']
+        rule.protocol = aInRule['Protocol']
     if aInRule['BeginPort']:
         match = iptc.Match(rule, aInRule['Protocol'])
-        match.dport = aInRule['BeginPort'] + ":" +  aInRule['EndPort']
-        rule.add_match(match)        
+        match.dport = aInRule['BeginPort'] + ":" + aInRule['EndPort']
+        rule.add_match(match)
 
     if aInBlock:
         rule.target = rule.create_target("DROP")
@@ -252,10 +274,11 @@ def addNetfilter(aInChain, aInRule, aInBlock):
         rule.target = rule.create_target("ACCEPT")
         aInChain.insert_rule(rule)
 
+
 def deleteNetfilter(aInRuleName):
-    
+
     table = iptc.Table(iptc.Table.FILTER)
-    
+
     for chain in table.chains:
         if not str(chain.name) == 'FORWARD':
             continue
@@ -268,8 +291,7 @@ def deleteNetfilter(aInRuleName):
                         chain.delete_rule(rule)
                         break
         break
-    
-    
+
 
 def updateNetfilters(aInLocalMinion):
     lCurrentNetfltRules = {}
@@ -279,35 +301,36 @@ def updateNetfilters(aInLocalMinion):
             continue
         lForwardChain = chain
         logger.debug('Processing Forward Chain')
-        for rule in chain.rules:  
+        for rule in chain.rules:
             for match in rule.matches:
                 if str(match.name) == 'comment':
                     logger.debug("CMS Rule: " + str(match.comment))
                     lRName = str(match.comment)
                     lCurrentNetfltRules[lRName] = rule
-           
- 
-    #logger.debug('Local Minion ' + aInLocalMinion.name + ' netfilter rule processing')	
-    url = EngineEndpoint + '/subscriptions/' + TenantID + '/GetNetfiltersForMinion/' + aInLocalMinion.name
+
+    #logger.debug('Local Minion ' + aInLocalMinion.name + ' netfilter rule processing')
+    url = EngineEndpoint + '/subscriptions/' + TenantID + \
+        '/GetNetfiltersForMinion/' + aInLocalMinion.name
     logger.debug(url)
     r = requests.get(url)
-    if r.status_code != requests.codes.ok :
+    if r.status_code != requests.codes.ok:
         logger.debug("GET call for netfilter failed ")
-        return    
+        return
 
     lDesiredRules = {}
-    
+
     # First add the block all rules so that they are at the bottom
     for lRule in r.json():
         lName = lRule['Name']
         if not 'CMS_BLOCKALL' in lName:
             continue
-        lDesiredRules[lName] = lName 
+        lDesiredRules[lName] = lName
         if not lCurrentNetfltRules.has_key(lName):
             logger.debug('Need to add Block all Netfilter Rule : ' + lName)
             addNetfilter(lForwardChain, lRule, True)
         else:
-            logger.debug('Desired Netfilter Rule : ' + lName + ' already exist')
+            logger.debug('Desired Netfilter Rule : ' +
+                         lName + ' already exist')
 
     for lRule in r.json():
         lName = lRule['Name']
@@ -318,9 +341,9 @@ def updateNetfilters(aInLocalMinion):
             logger.debug('Need to add Netfilter Rule : ' + lName)
             addNetfilter(lForwardChain, lRule, False)
         else:
-            logger.debug('Desired Netfilter Rule : ' + lName + ' already exist')
-    
-    
+            logger.debug('Desired Netfilter Rule : ' +
+                         lName + ' already exist')
+
     # Prune the additional rules
     if lCurrentNetfltRules:
         for lKey in lCurrentNetfltRules:
@@ -328,12 +351,13 @@ def updateNetfilters(aInLocalMinion):
                 logger.debug('Extraneous netfilter: ' + lKey)
                 try:
                     deleteNetfilter(lKey)
-                    logger.debug('Deleted netfilter') 
+                    logger.debug('Deleted netfilter')
                 except Exception, e:
                     nfltErr = "Couldn't delete netfilter: %s" % e
                     logger.error(nfltErr)
-        
+
     return
+
 
 def updateTopology():
     global TenantID
@@ -343,7 +367,7 @@ def updateTopology():
         logger.debug('TenantID has not been set yet')
         return
     logger.debug('Value of Network Provider is ' + NetworkProvider)
-    if NetworkProvider == 'custom': 
+    if NetworkProvider == 'custom':
         logger.debug('Network provider is custom, no config needed by us')
         return
 
@@ -354,10 +378,10 @@ def updateTopology():
     url = EngineEndpoint + '/subscriptions/' + TenantID + '/GetMinions'
     logger.debug(url)
     r = requests.get(url)
-    if r.status_code != requests.codes.ok :
+    if r.status_code != requests.codes.ok:
         logger.debug("GET call failed ")
-        return 
-    
+        return
+
     lFoundLocal = False
     rMinions = {}
     for lMinion in r.json():
@@ -370,10 +394,12 @@ def updateTopology():
             lsubnet = lMinion['Subnet']
             if localIpAddr != ldirectIpAddress:
                 logger.debug('Adding a remote Minion ' + lname)
-                rMinions[lname] = Minion(lname,lsubnet,ldirectAddress,ldirectIpAddress)
+                rMinions[lname] = Minion(
+                    lname, lsubnet, ldirectAddress, ldirectIpAddress)
             else:
                 logger.debug('Adding a local minion ' + lname)
-                localMinion = Minion(lname, lsubnet, ldirectAddress, ldirectIpAddress)
+                localMinion = Minion(
+                    lname, lsubnet, ldirectAddress, ldirectIpAddress)
                 lFoundLocal = True
         except:
             logger.error('Error in handling minion ' + lname)
@@ -381,7 +407,7 @@ def updateTopology():
     if not lFoundLocal:
         logger.error('Error we cannot find our own Minion')
         return
-    
+
     updateTunnels(rMinions, localMinion)
     '''    
     try:
@@ -392,14 +418,18 @@ def updateTopology():
     '''
     return
 
+
 def updateNatRules(aInSubnet):
-    val = subprocess.check_output(["sudo","iptables", "-n", "-L", "-t", "nat"])
+    val = subprocess.check_output(
+        ["sudo", "iptables", "-n", "-L", "-t", "nat"])
     lStatus = val.decode("utf-8")
     lRules = lStatus.splitlines()
 
     lSubnetParts = aInSubnet.split(".")
-    lRegularSubnet = lSubnetParts[0] + "." + lSubnetParts[1] + "." +  lSubnetParts[2] + ".0"
-    lAwsSubnet = lSubnetParts[0] + "-" + lSubnetParts[1] + "-" +  lSubnetParts[2] + "-0"
+    lRegularSubnet = lSubnetParts[0] + "." + \
+        lSubnetParts[1] + "." + lSubnetParts[2] + ".0"
+    lAwsSubnet = lSubnetParts[0] + "-" + \
+        lSubnetParts[1] + "-" + lSubnetParts[2] + "-0"
     lOverlaySubnet = lSubnetParts[0] + "." + lSubnetParts[1] + ".0.0/16"
     lRuleAdded = False
     lCount = 0
@@ -407,26 +437,30 @@ def updateNatRules(aInSubnet):
         logger.debug(lRule)
         lToks = lRule.split()
         if len(lToks) >= 5:
-                if not 'MASQUERADE' in lToks[0]:
-                    continue
+            if not 'MASQUERADE' in lToks[0]:
+                continue
+            else:
+                lCount = lCount + 1
+            if (lRegularSubnet in lToks[3]) or (lAwsSubnet in lToks[3]):
+                logger.debug('This rule is for our subnet')
+                if ('anywhere' in lToks[4]) or ('0.0.0.0' in lToks[4]):
+                    print 'Deleting this rule '
+                    subprocess.check_output(
+                        ["sudo", "iptables", "-t", "nat", "-D", "POSTROUTING", str(lCount)])
                 else:
-                    lCount = lCount + 1
-                if (lRegularSubnet in lToks[3]) or (lAwsSubnet in lToks[3]):
-                    logger.debug('This rule is for our subnet')
-                    if ('anywhere' in lToks[4]) or ('0.0.0.0' in lToks[4]):
-                        print 'Deleting this rule '
-                        subprocess.check_output(["sudo","iptables", "-t", "nat", "-D", "POSTROUTING", str(lCount)])
-                    else:
-                        logger.debug('Needed NAT rule is present')
-                        lRuleAdded = True
+                    logger.debug('Needed NAT rule is present')
+                    lRuleAdded = True
 
     if not lRuleAdded:
         logger.debug('Adding NAT Rule')
-        subprocess.check_output(["sudo","iptables","-t","nat","-F","POSTROUTING"])
-        lcidrSubnet =  lRegularSubnet + "/24"
+        subprocess.check_output(
+            ["sudo", "iptables", "-t", "nat", "-F", "POSTROUTING"])
+        lcidrSubnet = lRegularSubnet + "/24"
         logger.debug('NAT rule for ' + lcidrSubnet)
-        subprocess.check_output(["sudo","iptables", "-t","nat","-A","POSTROUTING","-s",lcidrSubnet,"!","-d",lOverlaySubnet,"-j","MASQUERADE"])
+        subprocess.check_output(["sudo", "iptables", "-t", "nat", "-A", "POSTROUTING",
+                                "-s", lcidrSubnet, "!", "-d", lOverlaySubnet, "-j", "MASQUERADE"])
         logger.debug('NAT Rule Add completed')
+
 
 def UpdateUdpDaemon():
     '''
@@ -437,17 +471,18 @@ def UpdateUdpDaemon():
 
     for lProc in lProcs:
         if 'udptunnel' in lProc:
-    	    logger.debug('udptunnel datapath agent is already running')
+            logger.debug('udptunnel datapath agent is already running')
             lRunning = True
             break
-    
+
     if not lRunning:
         logger.debug('starting udptunnel agent')
         #subprocess.Popen(["sudo","/usr/local/src/AgentV2/udptunnelv1.py", "-dp", "5000", "-cp", "1195"])
         os.system("sudo /usr/local/src/AgentV2/flask/bin/python /usr/local/src/AgentV2/udptunnelv1.py -dp 5000 -cp 1195 &")     
     '''
     os.system("sudo start udptunnel")
-	
+
+
 @app.route('/NetworkAgent/api/v1.0/UpdateMinionState', methods=['POST'])
 def UpdateMinionState():
     global TenantID
@@ -466,26 +501,26 @@ def UpdateMinionState():
     RegistryToken = request.json['RegistryToken']
     if TenantID == 'Empty':
         TenantID = request.json['TenantID']
-        EngineEndpoint = request.json['EngineEndpoint']    
+        EngineEndpoint = request.json['EngineEndpoint']
 
     logger.debug(request.json)
     if 'Images' in request.json:
         logger.debug('UpdateMinionState: Required Images has been set')
         if request.json['Images'] is not None:
             g_RequiredImages = list()
-            for lImg in request.json['Images']:    
+            for lImg in request.json['Images']:
                 g_RequiredImages.append(lImg)
         logger.debug(g_RequiredImages)
     else:
         logger.debug('UpdateMinionState: Required Images was not set')
-    	
+
     return jsonify({}), 201
+
 
 @app.route('/NetworkAgent/api/v1.0/GetTenantID', methods=['GET'])
 def gettenantid():
     global TenantID
-    return jsonify({'TenantID' :TenantID})
-
+    return jsonify({'TenantID': TenantID})
 
 
 def updateTopologyThread():
@@ -494,9 +529,12 @@ def updateTopologyThread():
         try:
             updateTopology()
         except:
-            logger.error( '****************************** UpdateTopology encountered an exception')
+            logger.error(
+                '****************************** UpdateTopology encountered an exception')
 
-        logger.debug('================================= updateTopology completed')
+        logger.debug(
+            '================================= updateTopology completed')
+
 
 def downloadImage(aInImageName):
     global RegistryToken
@@ -504,60 +542,70 @@ def downloadImage(aInImageName):
     lImageDwldUrl = 'http://127.0.0.1:4243/images/create?fromImage=' + aInImageName
     lPayload = {}
 
-    headers = { 'X-Registry-Auth' : RegistryToken }
+    headers = {'X-Registry-Auth': RegistryToken}
     r = requests.post(lImageDwldUrl, data=aInImageName, headers=headers)
 
     if r.ok:
         logger.debug('Finished downloading repo ' + aInImageName)
     else:
-        logger.debug('image download failed with return code and message' + str(r.status_code) + " " + str(r.json()))
-        logger.debug('Trying image download without docker creds for image - ' + aInImageName)
+        logger.debug('image download failed with return code and message' +
+                     str(r.status_code) + " " + str(r.json()))
+        logger.debug(
+            'Trying image download without docker creds for image - ' + aInImageName)
         r = requests.post(lImageDwldUrl, data=aInImageName)
-        logger.debug('image download without docker creds status return code and message' + str(r.status_code) + " " + str(r.json()))
+        logger.debug('image download without docker creds status return code and message' +
+                     str(r.status_code) + " " + str(r.json()))
+
 
 def downloadImageEcr(aInImageName):
-    logger.debug('Starting downloading ECR is_ecr=True ... ' + aInImageName  )
-    region_name, account_id = getRegionNameAndAccountFromImageName(aInImageName)
+    logger.debug('Starting downloading ECR is_ecr=True ... ' + aInImageName)
+    region_name, account_id = getRegionNameAndAccountFromImageName(
+        aInImageName)
     #logger.debug('downloading ECR is_ecr=True region_name=' +  region_name  )
 
-    #login to ecr
+    # login to ecr
     ecr_client = boto3.client('ecr', region_name=region_name)
 
-    #create docker client
+    # create docker client
     url = 'http://127.0.0.1:4243'
     docker_client = docker.DockerClient(base_url=url, version='auto')
 
-    #get token
+    # get token
     token = ecr_client.get_authorization_token(registryIds=[
         account_id,
     ])
-    username, password = base64.b64decode(token['authorizationData'][0]['authorizationToken']).decode().split(':')
+    username, password = base64.b64decode(
+        token['authorizationData'][0]['authorizationToken']).decode().split(':')
     registry = token['authorizationData'][0]['proxyEndpoint']
 
-    #docker_client login
-    rep = docker_client.login(username, password, registry=registry, reauth=True)
-    #image_name = aInImageName #'128329325849.dkr.ecr.us-west-2.amazonaws.com/reoecr1:latest' repodel1
+    # docker_client login
+    rep = docker_client.login(
+        username, password, registry=registry, reauth=True)
+    # image_name = aInImageName #'128329325849.dkr.ecr.us-west-2.amazonaws.com/reoecr1:latest' repodel1
     rep = docker_client.images.pull(aInImageName)
 
-    logger.debug('Finished downloading ECR repo is_ecr=True image=' + aInImageName + ' region_name=' +  region_name)
+    logger.debug('Finished downloading ECR repo is_ecr=True image=' +
+                 aInImageName + ' region_name=' + region_name)
+
 
 def getRegionNameAndAccountFromImageName(aInImageName):
     arr1 = aInImageName.split(".dkr.ecr.")
     if len(arr1) > 0 and arr1[1] is not None:
-        region_name= arr1[1].split(".")[0]
+        region_name = arr1[1].split(".")[0]
         account_id = arr1[0]
     else:
-        logger.debug("region_name invalid ECR aInImageName "+ aInImageName)
-    logger.debug("region_name="+ region_name + " account_id="+ account_id)
+        logger.debug("region_name invalid ECR aInImageName " + aInImageName)
+    logger.debug("region_name=" + region_name + " account_id=" + account_id)
     return (region_name, account_id)
+
 
 def updateImages():
     global TenantID
     global g_RequiredImages
 
     if TenantID == 'Empty':
-            logger.debug('TenantID has not been set yet')
-            return
+        logger.debug('TenantID has not been set yet')
+        return
 
     logger.debug('updateImages call ...')
     logger.debug(g_RequiredImages)
@@ -566,17 +614,22 @@ def updateImages():
     lDockersImgUrl = 'http://127.0.0.1:4243/images/json'
     r = requests.get(lDockersImgUrl)
     for lLocalImgTags in r.json():
-	try:
-            for lLocalImg in lLocalImgTags['RepoTags']:
-            	try:
-		    if not lLocalImages.has_key(lLocalImg):
+        try:
+            localImages = lLocalImgTags['RepoTags']
+            if not localImages:
+                logger.debug('Using repo digests')
+                localImages = lLocalImgTags['RepoDigests']
+            for lLocalImg in localImages:
+                try:
+                    if not lLocalImages.has_key(lLocalImg):
                         logger.debug('Exists image name ' + lLocalImg)
-               	        lLocalImages[lLocalImg] = lLocalImg
+                        lLocalImages[lLocalImg] = lLocalImg
                 except:
-		    logger.error('Error processing a tag in img ')
+                    logger.error('Error processing a tag in img ')
         except:
             exc_type, exc_value, exc_traceback = sys.exc_info()
-            el = repr(traceback.format_exception(exc_type, exc_value, exc_traceback))
+            el = repr(traceback.format_exception(
+                exc_type, exc_value, exc_traceback))
             logger.error('Error processing images ' + el)
 
     lNeededImages = g_RequiredImages
@@ -584,36 +637,42 @@ def updateImages():
         lImagesUrl = EngineEndpoint + '/subscriptions/' + TenantID + '/GetImages'
         logger.debug(lImagesUrl)
         r = requests.get(lImagesUrl)
-        if r.status_code != requests.codes.ok :
+        if r.status_code != requests.codes.ok:
             logger.debug("GET Images call failed ")
             return
         lNeededImages = r.json()
-        logger.debug("updateImages: Required Images has been retrieved from master pull")
+        logger.debug(
+            "updateImages: Required Images has been retrieved from master pull")
     else:
-        logger.debug("updateImages: Required Images has been set from master api")
+        logger.debug(
+            "updateImages: Required Images has been set from master api")
 
     for lImage in lNeededImages:
-        is_ecr =  "dkr.ecr" in lImage
-        logger.debug('Required Image Name ' + lImage + ' is_ecr?=' + str(is_ecr))
+        is_ecr = "dkr.ecr" in lImage
+        logger.debug('Required Image Name ' +
+                     lImage + ' is_ecr?=' + str(is_ecr))
         #lRequiredRepo = lImage.split(":")[0]
         if lLocalImages.has_key(lImage):
             logger.debug('Required image exists ' + lImage)
         else:
             try:
-                logger.debug('++++++++++ Need to download ecr Image=' + lImage + ' is_ecr?=' +  str(is_ecr))
+                logger.debug('++++++++++ Need to download ecr Image=' +
+                             lImage + ' is_ecr?=' + str(is_ecr))
                 if is_ecr:
                     downloadImageEcr(lImage)
                 else:
                     downloadImage(lImage)
             except:
                 exc_type, exc_value, exc_traceback = sys.exc_info()
-                el = repr(traceback.format_exception(exc_type, exc_value, exc_traceback))
-                logger.error('The download error was ' + el) 
+                el = repr(traceback.format_exception(
+                    exc_type, exc_value, exc_traceback))
+                logger.error('The download error was ' + el)
+
 
 def pruneImages():
     try:
         logger.debug('Start pruning images')
-	client = docker.from_env()
+        client = docker.from_env()
         filters = {'dangling': '0'}
         client.images.prune(filters)
         logger.debug('Finished pruning')
@@ -626,11 +685,11 @@ def updateImagesThread():
     while(True):
         time.sleep(12)
 
-	try:
+        try:
             lCount = lCount + 1
             if lCount >= 7200:
-               pruneImages()
-               lCount = 0
+                pruneImages()
+                lCount = 0
         except:
             logger.debug('Prune images failed')
 
@@ -638,14 +697,15 @@ def updateImagesThread():
             updateImages()
         except:
             logger.error('Error processing updateImages')
-        logger.debug( '=============================================== UpdateImages Completed')
-        
+        logger.debug(
+            '=============================================== UpdateImages Completed')
+
 
 def getOptions():
     name = None
 
     parser = argparse.ArgumentParser(description='Network Agent ')
-    parser.add_argument('-m','--mode',
+    parser.add_argument('-m', '--mode',
                         help='Network Agent overlay mode',
                         type=str, default='gre')
 
@@ -657,7 +717,7 @@ def getOptions():
 
 
 def setLogger():
-    logFile = "/var/log/NetworkAgent.log" 
+    logFile = "/var/log/NetworkAgent.log"
     logger = logging.getLogger('NetworkAgent')
 
     fh = handlers.RotatingFileHandler(logFile, maxBytes=5000000, backupCount=5)
@@ -666,15 +726,13 @@ def setLogger():
 
     logger.addHandler(fh)
     logger.setLevel(logging.DEBUG)
-    
-    
 
     #fh = logging.FileHandler("/var/log/NetworkAgent.log", "w")
-    #fh.setLevel(logging.DEBUG)
-    #logger.addHandler(fh)
-    
+    # fh.setLevel(logging.DEBUG)
+    # logger.addHandler(fh)
+
     #
-    # Detach stdout, stdin and stderr for daemonizing 
+    # Detach stdout, stdin and stderr for daemonizing
     #
     f = open('/dev/null', 'w')
     sys.stdout = f
@@ -684,6 +742,7 @@ def setLogger():
     logger.debug('stdout/stderr redirected to /dev/null ...')
 
     return logger
+
 
 def daemonizeDebian():
     logger.debug('stdout/stderr redirected to /dev/null ...')
@@ -714,9 +773,9 @@ def daemonizeDebian():
 
     process_id = os.getpid()
     logger.debug('Process ID after setid(): %s...' % str(process_id))
-    
+
     #
-    # Create PID file for tracking service 
+    # Create PID file for tracking service
     #
     pidfile = open('/var/run/NetworkAgent', 'w')
     pidfile.write("%d" % process_id)
@@ -734,6 +793,7 @@ def daemonizeDebian():
     os.chdir('/')
 
     logger.debug('Daemonization complete')
+
 
 def daemonizeUbuntu():
 
@@ -776,7 +836,7 @@ def daemonizeUbuntu():
 
     process_id = os.getpid()
     logger.debug('Process ID after setid(): %s...' % str(process_id))
-    
+
     pidfile = open('/var/run/NetworkAgent', 'w')
     pidfile.write("%d" % process_id)
     pidfile.close()
@@ -794,9 +854,11 @@ def daemonizeUbuntu():
 
     logger.debug('Daemonization complete')
 
+
 def getLinuxDistro():
     dist = platform.dist()
     return dist[0]
+
 
 def main():
     global logger
@@ -805,40 +867,38 @@ def main():
     lmode = getOptions()
 
     if lmode == "udp":
-	global g_udpmode
+        global g_udpmode
         g_udpmode = True
         logger.debug('Network Agent in UDP Mode')
     else:
         logger.debug('Network Agent in GRE mode')
 
-    linuxDistro = getLinuxDistro()    
+    linuxDistro = getLinuxDistro()
 
     #
-    # Method to start daemon varies on different linux 
-    # distro. Get the linux distro and daemonize as appropriate 
-    #  
-    # on ubunut: use upstart 
+    # Method to start daemon varies on different linux
+    # distro. Get the linux distro and daemonize as appropriate
+    #
+    # on ubunut: use upstart
     #   * copy NeworkAgent.conf to /etc/init
     #   * Create defaults in /etc/default
-    #   * start daemon using 'sudo start daemon' 
+    #   * start daemon using 'sudo start daemon'
     #
 
-    
     if linuxDistro == 'Ubuntu':
-       logger.debug('Create Daemon on %s'% linuxDistro)
-       daemonizeUbuntu()     
+        logger.debug('Create Daemon on %s' % linuxDistro)
+        daemonizeUbuntu()
     else:
-       logger.debug('Daemon on Linux Distro %s is not supported...'% linuxDistro)
-    
+        logger.debug(
+            'Daemon on Linux Distro %s is not supported...' % linuxDistro)
 
-   
     logger.debug('Launching Image update Thread')
-    lImagesthrd = Thread(target = updateImagesThread, args = [])
+    lImagesthrd = Thread(target=updateImagesThread, args=[])
     lImagesthrd.setDaemon(True)
     lImagesthrd.start()
-    
+
     app.run(host='0.0.0.0', port=60035, debug=True, use_reloader=False)
 
-if __name__ == '__main__':
-   main()
 
+if __name__ == '__main__':
+    main()
