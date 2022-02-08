@@ -327,7 +327,12 @@ def updateImages():
     r = requests.get(lDockersImgUrl)
     for lLocalImgTags in r.json():
         try:
-            for lLocalImg in lLocalImgTags['RepoTags']:
+            localImages = []
+            if lLocalImgTags['RepoTags']:
+                localImages.extend(lLocalImgTags['RepoTags'])
+            if lLocalImgTags['RepoDigests']:
+                localImages.extend(lLocalImgTags['RepoDigests'])
+            for lLocalImg in localImages:
                 try:
                     if lLocalImg not in lLocalImages:
                         logger.debug('Exists image name ' + lLocalImg)

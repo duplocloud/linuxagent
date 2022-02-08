@@ -615,10 +615,11 @@ def updateImages():
     r = requests.get(lDockersImgUrl)
     for lLocalImgTags in r.json():
         try:
-            localImages = lLocalImgTags['RepoTags']
-            if not localImages:
-                logger.debug('Using repo digests')
-                localImages = lLocalImgTags['RepoDigests']
+            localImages = []
+            if lLocalImgTags['RepoTags']:
+                localImages.extend(lLocalImgTags['RepoTags'])
+            if lLocalImgTags['RepoDigests']:
+                localImages.extend(lLocalImgTags['RepoDigests'])
             for lLocalImg in localImages:
                 try:
                     if not lLocalImages.has_key(lLocalImg):
