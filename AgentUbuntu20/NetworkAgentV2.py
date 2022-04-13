@@ -302,13 +302,15 @@ def downloadImage(aInImageName):
 
     if r.ok:
         logger.debug('Finished downloading repo ' + aInImageName)
+    elif r.status_code == 500:
+        logger.debug('image download failed with return code and message ' + str(r.status_code) + " " + str(r.json()))
+        respMess = r.json()
+        if respMess and "message" in respMess and respMess["message"] and "unauthorized: authentication required" in respMess["message"]:
+            logger.debug('Trying image download without docker creds for image - ' + aInImageName)
+            r = requests.post(lImageDwldUrl, data=aInImageName)
+            logger.debug('image download without docker creds status return code and message ' + str(r.status_code))
     else:
-        logger.debug('image download failed with return code and message' + str(r.status_code) + " " + str(r.json()))
-        logger.debug('Trying image download without docker creds for image - ' + aInImageName)
-        r = requests.post(lImageDwldUrl, data=aInImageName)
-        logger.debug(
-            'image download without docker creds status return code and message' + str(r.status_code) + " " + str(
-                r.json()))
+        logger.debug('image download failed with return code and message ' +str(r.status_code) + " " + str(r.json()))
 
 
 def updateImages():
