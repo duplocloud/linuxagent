@@ -2,7 +2,7 @@
 
 ### Choose base AMI-ID (and base OS).
 * Create AMI-ID with preferred OS.
-* E.g. You may get an AMI-ID from AWS console.  Or Use image baked in-house.
+* E.g. You may get an AMI-ID from AWS console.  Or Use an image baked in-house.
 ![Select AMI form Amazon Console](images/select_ami_in_aws_console_1.png)
 
 
@@ -35,10 +35,9 @@ sudo bash /home/ubuntu//Setup.sh
 ![create AMI](images/create_ami_3.png)
 
 ###  Add AMI/image entry into Plan images.
-* Create new plan/image entry.
-* The AMI available for select in VM creation dropdown.
+* Create new plan/image entry. The AMI will be available to select during hosts creation.
 ![Add image entry into Plan](images/create_plan_image_4.png)
 
 ###  Choose AMI during host creation
-* The image added to plan be available in all the related tenants.
+* The image congigured in plan will be available to all the related tenants.
 ![Choose AMI during host creation ](images/host_creation_to_Choose_AMI.png)
