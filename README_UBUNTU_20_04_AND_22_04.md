@@ -1,4 +1,4 @@
-## DUPLO AMI with   ubuntu 22.04  or 20.04 
+## Steps to create DUPLO AMI for ubuntu 22.04  or 20.04 OS.
 
 ### Choose base AMI-ID (and base OS).
 * Create AMI-ID with preferred OS.
