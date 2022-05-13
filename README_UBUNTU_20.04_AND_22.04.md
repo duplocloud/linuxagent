@@ -31,5 +31,4 @@ sudo bash /home/ubuntu//Setup.sh
 ![Add image entry into Plan](create_plan_image_4.png)
 
 ###  Choose AMI during host creation   
- ![Choose AMI during host creation](host creation to Choose AMI.png)
-
+![Choose AMI during host creation ](host_creation_to_Choose_AMI.png)
