@@ -1,4 +1,4 @@
-## Steps to create DUPLO AMI for ubuntu 22.04  or 20.04 OS.
+## Steps to create DUPLO AMI for- Centos-7/8, Amazon linux 2.
 
 ### Choose base AMI-ID (and base OS).
 * Create AMI-ID with preferred OS.
@@ -14,7 +14,7 @@
 
 * Base64 user data.
 ``` 
-IyEvYmluL2Jhc2gKCmN1cmwgLUggIkFjY2VwdDogYXBwbGljYXRpb24vdm5kLmdpdGh1Yi52My5yYXciIC1PIC0tb3V0cHV0LWRpciAvaG9tZS91YnVudHUvIC1MICBodHRwczovL2FwaS5naXRodWIuY29tL3JlcG9zL2R1cGxvY2xvdWQvbGludXhhZ2VudC9jb250ZW50cy9BZ2VudFVidW50dTIyL1NldHVwLnNoCmNobW9kICt4IC9ob21lL3VidW50dS8vU2V0dXAuc2gKc3VkbyBiYXNoIC9ob21lL3VidW50dS8vU2V0dXAuc2gKIw==
+IyEvYmluL2Jhc2gKCmN1cmwgLUggIkFjY2VwdDogYXBwbGljYXRpb24vdm5kLmdpdGh1Yi52My5yYXciIC1PIC1MIGh0dHBzOi8vYXBpLmdpdGh1Yi5jb20vcmVwb3MvZHVwbG9jbG91ZC9saW51eGFnZW50L2NvbnRlbnRzL0FnZW50QW1hem9uTGludXgyL1NldHVwLnNoCmNobW9kICt4IC4vU2V0dXAuc2gKc3VkbyBiYXNoIC4vU2V0dXAuc2gKIwo
 ```
 
 * Or if you already have a script, you may include following script into your 'base64 user data'. 
@@ -23,9 +23,9 @@ IyEvYmluL2Jhc2gKCmN1cmwgLUggIkFjY2VwdDogYXBwbGljYXRpb24vdm5kLmdpdGh1Yi52My5yYXci
 ```
 #!/bin/bash
 
-curl -H "Accept: application/vnd.github.v3.raw" -O --output-dir /tmp/ -L  https://api.github.com/repos/duplocloud/linuxagent/contents/AgentUbuntu22/Setup.sh
-chmod +x /tmp/Setup.sh
-sudo bash /tmp/Setup.sh
+curl -H "Accept: application/vnd.github.v3.raw" -O -L https://api.github.com/repos/duplocloud/linuxagent/contents/AgentAmazonLinux2/Setup.sh
+chmod +x ./Setup.sh
+sudo bash ./Setup.sh
 #
 ```
 
