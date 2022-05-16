@@ -40,4 +40,4 @@ sudo bash ./Setup.sh
 
 ###  Choose AMI during host creation
 * The image congigured in plan will be available to all the related tenants.
-![Choose AMI during host creation ](images/Host_amz_liniux_creation_to_choose_ami.png.png)
+![Choose AMI during host creation ](images/Host_amz_liniux_creation_to_choose_ami.png)
