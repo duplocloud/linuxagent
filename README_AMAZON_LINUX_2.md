@@ -1,4 +1,4 @@
-## Steps to create DUPLO AMI for- Centos-7/8, Amazon linux 2.
+## Steps to create DUPLO AMI for- Amazon linux 2.
 
 ### Choose base AMI-ID (and base OS).
 * Create AMI-ID with preferred OS.
@@ -36,8 +36,8 @@ sudo bash ./Setup.sh
 
 ###  Add AMI/image entry into Plan images.
 * Create new plan/image entry. The AMI will be available to select during hosts creation.
-![Add image entry into Plan](images/create_plan_image_4.png)
+![Add image entry into Plan](images/create_plan_image_amz.png)
 
 ###  Choose AMI during host creation
 * The image congigured in plan will be available to all the related tenants.
-![Choose AMI during host creation ](images/host_creation_to_Choose_AMI.png)
+![Choose AMI during host creation ](images/Host_amz_liniux_creation_to_choose_ami.png.png)
