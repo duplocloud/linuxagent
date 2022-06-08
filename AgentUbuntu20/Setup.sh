@@ -52,7 +52,7 @@ py3Install () {
    #########
    cd /lib/systemd/system
    echo $PWD
-   curl -H "Accept: application/vnd.github.v3.raw" -O -L https://api.github.com/repos/duplocloud/linuxagent/contents/AgentUbuntu20/NetworkAgent.service
+   sudo curl -H "Accept: application/vnd.github.v3.raw" -O -L https://api.github.com/repos/duplocloud/linuxagent/contents/AgentUbuntu20/NetworkAgent.service
    ######
    ls -alt NetworkAgent.service
    ls -alt $DAEMON_DIR
@@ -179,7 +179,8 @@ echo "Step 2: Check if Agent directory exists if not create the directory";
 echo "--------------------------OS=$OS VER=$VER-------------------------------------2"
 echo; echo;
 
-mkdir -p $DAEMON_DIR
+sudo mkdir -p $DAEMON_DIR
+sudo chown -R "$USER" "$DAEMON_DIR"
 echo "files in $DAEMON_DIR "
 ls -alt $DAEMON_DIR
 
@@ -195,7 +196,7 @@ echo; echo;
 
 echo "Check if $AGENT is running"
 
-if ps ax | grep -v grep | grep $AGENT > /dev/null
+if ps ax | grep -v grep | grep "$AGENT" > /dev/null
 then
     pid=`pgrep -f "python $DAEMON"`
     echo "$AGENT is running $pid Shutting down $AGENT before installation..."
