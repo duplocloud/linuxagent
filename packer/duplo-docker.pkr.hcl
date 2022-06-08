@@ -20,6 +20,11 @@ locals {
 	image_family      = "duplocloud-docker"
   image_name        = "${local.image_family}-${local.image_version}"
   image_description = "DuploCloud Docker Native (${local.image_version})"
+
+	# Image publishing
+	is_release        = ( (trimprefix(local.image_version, "release") != local.image_version) ||
+                        (trimprefix(local.image_version, "hotfix") != local.image_version) )
+	is_public         = local.is_release
 }
 
 source "googlecompute" "ubuntu-18" {
@@ -87,8 +92,8 @@ source "googlecompute" "ubuntu-22" {
 
 build {
   sources = [
-		//"sources.googlecompute.ubuntu-18",
-		//"sources.googlecompute.ubuntu-20",
+		"sources.googlecompute.ubuntu-18",
+		"sources.googlecompute.ubuntu-20",
 		"sources.googlecompute.ubuntu-22"
 	]
 
@@ -115,5 +120,16 @@ build {
 		script = "${path.root}/../AgentUbuntu22/Setup.sh"
 		env    = { DEBIAN_FRONTEND = "noninteractive" }
 		only   = ["googlecompute.ubuntu-22"]
+	}
+
+	post-processor "manifest" {}
+
+  post-processor "shell-local" {
+    inline = [
+			"${local.is_public} || exit 0",
+      "IMAGE=$(jq -r \".builds[-1].artifact_id\" packer-manifest.json)",
+			"echo 'Making image public'",
+      "gcloud compute images add-iam-policy-binding $${IMAGE} --project=${var.gcp_project_id} --member='allAuthenticatedUsers' --role='roles/compute.imageUser'",
+    ]
 	}
 }
