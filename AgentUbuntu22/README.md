@@ -22,9 +22,11 @@ IyEvYmluL2Jhc2gKCmN1cmwgLUggIkFjY2VwdDogYXBwbGljYXRpb24vdm5kLmdpdGh1Yi52My5yYXci
 curl -H "Accept: application/vnd.github.v3.raw" -O -L https://api.github.com/repos/duplocloud/linuxagent/contents/AgentUbuntu22/Setup.sh
 chmod +x ./Setup.sh
 sudo bash ./Setup.sh
-#
 
+# now, reboot the system
+sudo reboot
 
+# after reboot
 sudo systemctl daemon-reload
 sudo service NetworkAgent status
 sudo service NetworkAgent stop
