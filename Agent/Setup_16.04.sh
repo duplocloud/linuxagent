@@ -37,18 +37,19 @@ echo "=================================="
 # Step 2: Check if Agent directory exists if not create the directory
 #
 if [ -z "$INSTALLDIR" ]; then
-   DAEMON_DIR="$INSTALL_DIR/$AGENT_DIR"
-   echo "Installing $AGENT in default location $DAEMON_DIR"
+    DAEMON_DIR="$INSTALL_DIR/$AGENT_DIR"
+    echo "Installing $AGENT in default location $DAEMON_DIR"
 else
-   DAEMON_DIR=$INSTALLDIR/$AGENT_DIR
-   echo "Installing $AGENT in $DAEMON_DIR"
+    DAEMON_DIR=$INSTALLDIR/$AGENT_DIR
+    echo "Installing $AGENT in $DAEMON_DIR"
 fi 
 
 if [ -d $DAEMON_DIR ]; then 
-   echo "$DAEMON_DIR directory exists"
+    echo "$DAEMON_DIR directory exists"
 else 
-   echo "Creating $DAEMON_DIR"
-   mkdir $DAEMON_DIR
+    echo "Creating $DAEMON_DIR"
+    sudo mkdir -p $DAEMON_DIR
+    sudo chown -R "$USER" "$DAEMON_DIR"
 fi 
 
 DAEMON_NAME="NetworkAgentV2"
@@ -158,8 +159,8 @@ ubuntuInstall () {
    echo "Performing Ubuntu Install "
    cd /etc/init/
    echo $PWD
-   curl -H "Accept: application/vnd.github.v3.raw" -O -L https://api.github.com/repos/duplocloud/linuxagent/contents/Agent/udptunnel.conf
-   curl -H "Accept: application/vnd.github.v3.raw" -O -L https://api.github.com/repos/duplocloud/linuxagent/contents/Agent/NetworkAgent.conf
+   sudo curl -H "Accept: application/vnd.github.v3.raw" -O -L https://api.github.com/repos/duplocloud/linuxagent/contents/Agent/udptunnel.conf
+   sudo curl -H "Accept: application/vnd.github.v3.raw" -O -L https://api.github.com/repos/duplocloud/linuxagent/contents/Agent/NetworkAgent.conf
    sudo start NetworkAgent
 }
 
@@ -169,8 +170,7 @@ ubuntu16PlusInstall () {
    echo $PWD
    #curl -H "Accept: application/vnd.github.v3.raw" -O -L https://api.github.com/repos/duplocloud/linuxagent/contents/Agent/udptunnel.service
    #curl -H "Accept: application/vnd.github.v3.raw" -O -L https://api.github.com/repos/duplocloud/linuxagent/contents/Agent/NetworkAgent.service
-   curl -H "Accept: application/vnd.github.v3.raw" -O -L https://api.github.com/repos/duplocloud/linuxagent/contents/Agent/NetworkAgent.service
-   #cp /home/merchantsameer2014/NetworkAgent.service /etc/systemd/system
+   sudo curl -H "Accept: application/vnd.github.v3.raw" -O -L https://api.github.com/repos/duplocloud/linuxagent/contents/Agent/NetworkAgent.service
    sudo systemctl daemon-reload
    sudo systemctl enable NetworkAgent.service
    sudo systemctl start NetworkAgent.service

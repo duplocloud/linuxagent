@@ -105,7 +105,7 @@ build {
 	}
 
 	provisioner "shell" {
-		script = "${path.root}/../Agent/Setup.sh"
+		script = "${path.root}/../Agent/Setup_16.04.sh"
 		env    = { DEBIAN_FRONTEND = "noninteractive" }
 		only   = ["googlecompute.ubuntu-18"]
 	}
