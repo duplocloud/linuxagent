@@ -23,7 +23,10 @@ chmod +x ./Setup.sh
 sudo bash ./Setup.sh
 #
 
+# now, reboot the system
+sudo reboot
 
+# after reboot
 systemctl daemon-reload
 service NetworkAgent status
 service NetworkAgent stop
