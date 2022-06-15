@@ -1,7 +1,7 @@
 # Overall settings
 variable "image_version" { default = "dev" }
 variable "default_disk_size" { default = 35 }
-variable "temporary_key_pair_type" { default = "ecdsa" }
+variable "temporary_key_pair_type" { default = "ed25519" }
 
 # Settings for AWS
 variable "aws_instance_type" { default = "t3.small" }
