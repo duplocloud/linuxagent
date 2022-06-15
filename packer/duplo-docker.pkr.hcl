@@ -271,15 +271,76 @@ source "amazon-ebs" "ubuntu-22" {
   }
 }
 
+source "amazon-ebs" "amazonlinux-2" {
+  ami_name                    = "${local.image_family}-amazonlinux2-${local.image_version}"
+  ami_description             = "${local.image_description} (amazonlinux2)"
+  instance_type               = var.aws_instance_type
+  region                      = var.aws_region
+  vpc_id                      = var.aws_vpc_id
+  subnet_id                   = var.aws_subnet_id
+  security_group_id           = var.aws_security_group_id
+  iam_instance_profile        = var.aws_iam_instance_profile
+  associate_public_ip_address = true
+
+	temporary_key_pair_type = var.temporary_key_pair_type
+	ssh_username            = "ec2-user"
+
+  source_ami_filter {
+    filters = {
+      name                = "amzn2-ami-kernel-5.10-hvm-*-x86_64-gp2"
+      root-device-type    = "ebs"
+      virtualization-type = "hvm"
+    }
+    most_recent = true
+    owners      = ["amazon"]
+  }
+
+  # Build a public AMI
+  encrypt_boot = false
+  ami_groups   = local.is_public ? ["all"] : []
+  ami_regions  = [for region in local.ami_regions: region if region != var.aws_region]
+
+  # Customize the volumes
+  launch_block_device_mappings {
+    device_name = "/dev/sda1"
+    encrypted   = false
+    volume_size = 35
+    volume_type = "gp3"
+  }
+
+  # Source instance tags.
+  run_tag {
+    key   = "Name"
+    value = "Packer Builder: ${local.image_family}-amazonlinux2-${local.image_version}"
+  }
+
+  # AMI tags.
+  tag {
+    key   = "Name"
+    value = "${local.image_family}-amazonlinux2-${local.image_version}"
+  }
+  tag {
+		key   = "OS"
+		value = "amazonlinux2"
+  }
+}
+
 build {
   sources = [
 		"sources.amazon-ebs.ubuntu-18",
 		"sources.amazon-ebs.ubuntu-20",
 		"sources.amazon-ebs.ubuntu-22",
+		"sources.amazon-ebs.amazonlinux-2",
 		"sources.googlecompute.ubuntu-18",
 		"sources.googlecompute.ubuntu-20",
 		"sources.googlecompute.ubuntu-22"
 	]
+
+	// OS updates - Amazon Linux
+	provisioner "shell" {
+		inline = [ "sleep 10", "sudo yum update -y" ]
+		only   = [ "amazon-ebs.amazonlinux-2" ]
+	}
 
 	// OS updates - Ubuntu
 	provisioner "shell" {
@@ -289,6 +350,12 @@ build {
 			"amazon-ebs.ubuntu-18", "amazon-ebs.ubuntu-20", "amazon-ebs.ubuntu-22",
 			"googlecompute.ubuntu-18", "googlecompute.ubuntu-20", "googlecompute.ubuntu-22"
 		]
+	}
+
+	// Install - Amazon Linux 2
+	provisioner "shell" {
+		script = "${path.root}/../AgentAmazonLinux2/Setup.sh"
+		only   = [ "amazon-ebs.amazonlinux-2" ]
 	}
 
 	// Install - Ubuntu 18
