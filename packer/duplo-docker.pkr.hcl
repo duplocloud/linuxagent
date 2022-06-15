@@ -38,7 +38,7 @@ source "googlecompute" "ubuntu-18" {
 	disk_size               = var.default_disk_size
 	temporary_key_pair_type = var.temporary_key_pair_type
 
-	image_family      = local.image_family
+	image_family      = "${local.image_family}-ubuntu18"
 	image_labels      = { os = "ubuntu18" }
 	image_name        = "${local.image_name}-ubuntu18"
 	image_description = "${local.image_description} (ubuntu18)"
@@ -60,7 +60,7 @@ source "googlecompute" "ubuntu-20" {
     block-project-ssh-keys = "true"
   }
 
-	image_family      = local.image_family
+	image_family      = "${local.image_family}-ubuntu20"
 	image_labels      = { os = "ubuntu20" }
 	image_name        = "${local.image_name}-ubuntu20"
 	image_description = "${local.image_description} (ubuntu20)"
@@ -82,7 +82,7 @@ source "googlecompute" "ubuntu-22" {
     block-project-ssh-keys = "true"
   }
 
-	image_family      = local.image_family
+	image_family      = "${local.image_family}-ubuntu22"
 	image_labels      = { os = "ubuntu22" }
 	image_name        = "${local.image_name}-ubuntu22"
 	image_description = "${local.image_description} (ubuntu22)"
@@ -120,6 +120,21 @@ build {
 		script = "${path.root}/../AgentUbuntu22/Setup.sh"
 		env    = { DEBIAN_FRONTEND = "noninteractive" }
 		only   = ["googlecompute.ubuntu-22"]
+	}
+
+	// Docker credential helpers - GCP
+	provisioner "file" {
+		source      = "${path.root}/files/docker-config.gcloud.json"
+		destination = "/tmp/docker-config.gcloud.json"
+		only   = ["googlecompute.ubuntu-18", "googlecompute.ubuntu-20", "googlecompute.ubuntu-22"]
+	}
+	provisioner "shell" {
+		inline = [
+			"sudo mkdir -p /root/.docker",
+			"sudo install -o root -g root -m 640 /tmp/docker-config.gcloud.json /root/.docker/config.json",
+			"sudo rm -f /tmp/docker-config.gcloud.json"
+		]
+		only   = ["googlecompute.ubuntu-18", "googlecompute.ubuntu-20", "googlecompute.ubuntu-22"]
 	}
 
 	post-processor "manifest" {}
