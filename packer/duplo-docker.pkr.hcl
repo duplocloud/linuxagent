@@ -120,7 +120,8 @@ source "amazon-ebs" "ubuntu-18" {
   iam_instance_profile        = var.aws_iam_instance_profile
   associate_public_ip_address = true
 
-	ssh_username = "ubuntu"
+	temporary_key_pair_type = var.temporary_key_pair_type
+	ssh_username            = "ubuntu"
 
   source_ami_filter {
     filters = {
@@ -173,7 +174,8 @@ source "amazon-ebs" "ubuntu-20" {
   iam_instance_profile        = var.aws_iam_instance_profile
   associate_public_ip_address = true
 
-	ssh_username = "ubuntu"
+	temporary_key_pair_type = var.temporary_key_pair_type
+	ssh_username            = "ubuntu"
 
   source_ami_filter {
     filters = {
@@ -226,7 +228,8 @@ source "amazon-ebs" "ubuntu-22" {
   iam_instance_profile        = var.aws_iam_instance_profile
   associate_public_ip_address = true
 
-	ssh_username = "ubuntu"
+	temporary_key_pair_type = var.temporary_key_pair_type
+	ssh_username            = "ubuntu"
 
   source_ami_filter {
     filters = {
