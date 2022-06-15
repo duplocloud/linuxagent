@@ -99,7 +99,7 @@ build {
 
 	// OS updates - Ubuntu
 	provisioner "shell" {
-		inline = [ "sudo apt-get update -y", "sudo apt-get upgrade -y" ]
+		inline = [ "sudo apt-get clean -y", "sudo apt-get update -y", "sudo apt-get upgrade -y" ]
 		env    = { DEBIAN_FRONTEND = "noninteractive" }
 		only   = ["googlecompute.ubuntu-18", "googlecompute.ubuntu-20", "googlecompute.ubuntu-22"]
 	}
