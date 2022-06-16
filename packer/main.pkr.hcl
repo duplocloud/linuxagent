@@ -92,9 +92,9 @@ build {
     inline = [
 			"${local.is_public} || exit 0",
       "LAST_RUN=$(jq -r '.builds[-1].packer_run_uuid' packer-manifest.json)",
-      "GCP_IMAGES=$(jq -r '.builds[] | select((.packer_run_uuid == \"'\"$LAST_RUN\"'\") and .builder_type == \"googlecompute\") | .artifact_id' packer-manifest.json)",
+      "GCP_IMAGES=\"$(jq -r '.builds[] | select((.packer_run_uuid == \"'\"$LAST_RUN\"'\") and .builder_type == \"googlecompute\") | .artifact_id' packer-manifest.json)\"",
 			"echo 'Making GCP images public'",
-      "for img in $${GCP_IMAGES[@]}; do gcloud compute images add-iam-policy-binding $${img} --project=${var.gcp_project_id} --member='allAuthenticatedUsers' --role='roles/compute.imageUser'; done",
+      "for img in $${GCP_IMAGES}; do gcloud compute images add-iam-policy-binding $${img} --project=${var.gcp_project_id} --member='allAuthenticatedUsers' --role='roles/compute.imageUser'; done",
     ]
 	}
 }
