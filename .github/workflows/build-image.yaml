@@ -2,10 +2,14 @@ name: 'Image: Agent - duplocloud-docker'
 on:
   workflow_dispatch:
     inputs:
-      version:
-        description: 'Override Version'
+      image_version:
+        description: 'Set the image version'
         required: false
-        default: '' # default to dev version
+        default: 'dev' # default to dev version
+      only_builders:
+        description: 'Only run these builders'
+        required: false
+        default: 'amazon-ebs.ubuntu-22,amazon-ebs.amazonlinux-2,googlecompute.ubuntu-22'
 env:
   duplo_host: https://prod.duplocloud.net
   duplo_token: "${{ secrets.PROD_DUPLO_TOKEN }}"
@@ -60,11 +64,27 @@ jobs:
           sudo unzip -d /tmp/bin packer.zip
           export PATH="/tmp/bin:$PATH"
 
-          # Validate the template
+          # Validate the template.
           packer validate -syntax-only ./packer
 
-          # Build the images
-          packer build \
+          # Parse build options.
+          if [ -n "$ONLY_BUILDERS" ]; then
+            ONLY_BUILDERS="-only=$ONLY_BUILDERS"
+          fi
+
+          # Build the images.
+          rm -f packer-manifest.json # always be clean
+          packer build "$ONLY_BUILDERS" \
             -color=false -on-error=cleanup -parallel-builds=10 -timestamp-ui \
-            -only=amazon-ebs.ubuntu-22,amazon-ebs.amazonlinux-2,googlecompute.ubuntu-22 \
             ./packer
+          
+        env:
+          ONLY_BUILDERS: "${{ github.event.inputs.only_builders }}"
+          PKR_VAR_image_version: "${{ github.event.inputs.image_version }}"
+      
+      # Upload the image manifest
+      - name: Attach Manifest
+        uses: actions/upload-artifact@v3
+        with:
+          name: packer-manifest
+          path: packer-manifest.json
