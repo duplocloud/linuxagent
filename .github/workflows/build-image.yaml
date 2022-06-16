@@ -11,7 +11,7 @@ env:
   duplo_token: "${{ secrets.PROD_DUPLO_TOKEN }}"
 jobs:
   build-all:
-    # Add "id-token" with the intended permissions.
+    # Needed for GCP (OIDC): Add "id-token" with the intended permissions.
     permissions:
       contents: 'read'
       id-token: 'write'
@@ -56,5 +56,5 @@ jobs:
         uses: hashicorp/packer-github-actions@master
         with:
           command: build
-          arguments: "-color=false -on-error=cleanup -parallel-builds=0 -timestamp-ui"
+          arguments: "-color=false -on-error=cleanup -parallel-builds=10 -timestamp-ui -only=amazon-ebs.ubuntu-22,amazon-ebs.amazonlinux-2,googlecompute.ubuntu-22"
           target: ./packer
