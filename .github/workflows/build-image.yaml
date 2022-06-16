@@ -18,35 +18,35 @@ jobs:
 
     runs-on: ubuntu-latest
     steps:
-      # - name: Checkout
-      #   uses: actions/checkout@v3
+      - name: Checkout
+        uses: actions/checkout@v3
 
-      # # GCP credentials
-      # - name: Packer GCP Service Account
-      #   uses: google-github-actions/auth@v0
-      #   with:
-      #     workload_identity_provider: 'projects/17033121890/locations/global/workloadIdentityPools/duplo-githubactions/providers/duplo-githubactions'
-      #     service_account: 'packer@msp-duplocloud-01.iam.gserviceaccount.com'
+      # GCP credentials
+      - name: Packer GCP Service Account
+        uses: google-github-actions/auth@v0
+        with:
+          workload_identity_provider: 'projects/17033121890/locations/global/workloadIdentityPools/duplo-githubactions/providers/duplo-githubactions'
+          service_account: 'packer@msp-duplocloud-01.iam.gserviceaccount.com'
 
-      # # AWS credentials
-      # - name: Tenant AWS JIT
-      #   uses: duplocloud/ghactions-aws-jit@master
-      #   with:
-      #     tenant: github
-      # - name: Packer AWS Role
-      #   uses: aws-actions/configure-aws-credentials@v1
-      #   with:
-      #     aws-access-key-id: ${{ env.AWS_ACCESS_KEY_ID }}
-      #     aws-secret-access-key: ${{ env.AWS_SECRET_ACCESS_KEY }}
-      #     aws-session-token: ${{ env.AWS_SESSION_TOKEN }}
-      #     aws-region: us-west-2
-      #     role-to-assume: arn:aws:iam::227120241369:role/packer-builder
-      #     role-session-name: github-duplocloud-linuxagent
-      #     role-duration-seconds: 3600
-      #     role-skip-session-tagging: true
+      # AWS credentials
+      - name: Tenant AWS JIT
+        uses: duplocloud/ghactions-aws-jit@master
+        with:
+          tenant: github
+      - name: Packer AWS Role
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ env.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ env.AWS_SECRET_ACCESS_KEY }}
+          aws-session-token: ${{ env.AWS_SESSION_TOKEN }}
+          aws-region: us-west-2
+          role-to-assume: arn:aws:iam::227120241369:role/packer-builder
+          role-session-name: github-duplocloud-linuxagent
+          role-duration-seconds: 3600
+          role-skip-session-tagging: true
 
       # Build images
-      - name: Validate Packer Template
+      - name: Build VM Images
         run: |
           set -eu
 
@@ -60,11 +60,10 @@ jobs:
           sudo unzip -d /tmp/bin packer.zip
           export PATH="/tmp/bin:$PATH"
 
-          # Run packer.
-          packer version
-      # - name: Build Images
-      #   uses: hashicorp/packer-github-actions@master
-      #   with:
-      #     command: build
-      #     arguments: "-color=false -on-error=cleanup -parallel-builds=10 -timestamp-ui -only=amazon-ebs.ubuntu-22,amazon-ebs.amazonlinux-2,googlecompute.ubuntu-22"
-      #     target: ./packer
+          # Validate the template
+          packer validate -syntax-only ./packer
+
+          # Build the images
+          packer -color=false -on-error=cleanup -parallel-builds=10 -timestamp-ui \
+            -only=amazon-ebs.ubuntu-22,amazon-ebs.amazonlinux-2,googlecompute.ubuntu-22 \
+            ./packer
