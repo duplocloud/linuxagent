@@ -1,0 +1,15 @@
+name: 'Lint: Agent - duplocloud-docker'
+on:
+  push:
+jobs:
+  lint-all:
+    runs-on: ubuntu-latest
+    steps:
+
+      # Validate templates
+      - name: Validate Template
+        uses: hashicorp/packer-github-actions@master
+        with:
+          command: validate
+          arguments: -syntax-only
+          target: ./packer
