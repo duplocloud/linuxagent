@@ -51,7 +51,7 @@ jobs:
         with:
           command: validate
           arguments: -syntax-only
-          target: packer.pkr.hcl
+          target: ./packer
       - name: Build Images
         uses: hashicorp/packer-github-actions@master
         with:
