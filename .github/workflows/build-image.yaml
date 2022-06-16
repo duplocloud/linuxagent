@@ -56,7 +56,9 @@ jobs:
 
           # Install packer.
           curl -o packer.zip https://releases.hashicorp.com/packer/1.8.1/packer_1.8.1_linux_amd64.zip
-          sudo unzip -d /usr/local/bin packer.zip
+          mkdir -p /tmp/bin
+          sudo unzip -d /tmp/bin packer.zip
+          export PATH="/tmp/bin:$PATH"
 
           # Run packer.
           packer version
