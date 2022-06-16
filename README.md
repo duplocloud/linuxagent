@@ -1,6 +1,6 @@
 # Automated Installation
 
-[![Latest Build](https://github.com/duplocloud/linuxagent/actions/workflows/build-image.yml/badge.svg?branch=master)](https://github.com/duplocloud/linuxagent/actions/workflows/build-image.yml "See latest builds")
+[![Latest Build](https://github.com/duplocloud/linuxagent/actions/workflows/build-image.yaml/badge.svg?branch=master)](https://github.com/duplocloud/linuxagent/actions/workflows/build-image.yaml "See latest builds")
 
 ## Run from Github Actions
 
