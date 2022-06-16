@@ -68,13 +68,15 @@ jobs:
           packer validate -syntax-only ./packer
 
           # Parse build options.
-          if [ -n "$ONLY_BUILDERS" ]; then
+          if [ "$ONLY_BUILDERS" = "all" ]; then
+            ONLY_BUILDERS=""
+          elif [ -n "$ONLY_BUILDERS" ]; then
             ONLY_BUILDERS="-only=$ONLY_BUILDERS"
           fi
 
           # Build the images.
           rm -f packer-manifest.json # always be clean
-          packer build "$ONLY_BUILDERS" \
+          packer build $ONLY_BUILDERS \
             -color=false -on-error=cleanup -parallel-builds=10 -timestamp-ui \
             ./packer
           
