@@ -21,6 +21,13 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
 
+      # GCP credentials
+      - name: Packer GCP Service Account
+        uses: google-github-actions/auth@v0
+        with:
+          workload_identity_provider: 'projects/17033121890/locations/global/workloadIdentityPools/duplo-githubactions/providers/duplo-githubactions'
+          service_account: 'packer@msp-duplocloud-01.iam.gserviceaccount.com'
+
       # AWS credentials
       - name: Tenant AWS JIT
         uses: duplocloud/ghactions-aws-jit@master
@@ -29,18 +36,14 @@ jobs:
       - name: Packer AWS Role
         uses: aws-actions/configure-aws-credentials@v1
         with:
+          aws-access-key-id: ${{ env.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ env.AWS_SECRET_ACCESS_KEY }}
+          aws-session-token: ${{ env.AWS_SESSION_TOKEN }}
+          aws-region: us-west-2
           role-to-assume: arn:aws:iam::227120241369:role/packer-builder
           role-session-name: github-duplocloud-linuxagent
           role-duration-seconds: 3600
           role-skip-session-tagging: true
-          aws-region: us-west-2
-
-      # GCP credentials
-      - name: Packer GCP Service Account
-        uses: google-github-actions/auth@v0
-        with:
-          workload_identity_provider: 'projects/17033121890/locations/global/workloadIdentityPools/duplo-githubactions/providers/duplo-githubactions'
-          service_account: 'packer@msp-duplocloud-01.iam.gserviceaccount.com'
 
       # Build images
       - name: Validate Packer Template
