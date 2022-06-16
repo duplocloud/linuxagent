@@ -37,7 +37,7 @@ build {
 	// OS updates - Ubuntu
 	provisioner "shell" {
 		inline = [ "sudo apt-get clean -y", "sudo apt-get update -y", "sudo apt-get upgrade -y" ]
-		env    = { DEBIAN_FRONTEND = "noninteractive" }
+		environment_vars = [ "DEBIAN_FRONTEND=noninteractive" ]
 		only   = [
 			"amazon-ebs.ubuntu-18", "amazon-ebs.ubuntu-20", "amazon-ebs.ubuntu-22",
 			"googlecompute.ubuntu-18", "googlecompute.ubuntu-20", "googlecompute.ubuntu-22"
@@ -53,21 +53,21 @@ build {
 	// Install - Ubuntu 18
 	provisioner "shell" {
 		script = "${path.root}/../Agent/Setup_16.04.sh"
-		env    = { DEBIAN_FRONTEND = "noninteractive" }
+		environment_vars = [ "DEBIAN_FRONTEND=noninteractive" ]
 		only   = [ "amazon-ebs.ubuntu-18", "googlecompute.ubuntu-18" ]
 	}
 
 	// Install - Ubuntu 20
 	provisioner "shell" {
 		script = "${path.root}/../AgentUbuntu20/Setup.sh"
-		env    = { DEBIAN_FRONTEND = "noninteractive" }
+		environment_vars = [ "DEBIAN_FRONTEND=noninteractive" ]
 		only   = [ "amazon-ebs.ubuntu-20", "googlecompute.ubuntu-20" ]
 	}
 
 	// Install - Ubuntu 22
 	provisioner "shell" {
 		script = "${path.root}/../AgentUbuntu22/Setup.sh"
-		env    = { DEBIAN_FRONTEND = "noninteractive" }
+		environment_vars = [ "DEBIAN_FRONTEND=noninteractive" ]
 		only   = [ "amazon-ebs.ubuntu-22", "googlecompute.ubuntu-22" ]
 	}
 

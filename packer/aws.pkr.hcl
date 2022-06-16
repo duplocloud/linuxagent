@@ -33,6 +33,7 @@ source "amazon-ebs" "ubuntu-18" {
 
 	temporary_key_pair_type = var.temporary_key_pair_type
 	ssh_username            = "ubuntu"
+  ssh_interface           = "session_manager"
 
   source_ami_filter {
     filters = {
@@ -89,6 +90,7 @@ source "amazon-ebs" "ubuntu-20" {
 
 	temporary_key_pair_type = var.temporary_key_pair_type
 	ssh_username            = "ubuntu"
+  ssh_interface           = "session_manager"
 
   source_ami_filter {
     filters = {
@@ -145,6 +147,7 @@ source "amazon-ebs" "ubuntu-22" {
 
 	temporary_key_pair_type = var.temporary_key_pair_type
 	ssh_username            = "ubuntu"
+  ssh_interface           = "session_manager"
 
   source_ami_filter {
     filters = {
@@ -201,6 +204,7 @@ source "amazon-ebs" "amazonlinux-2" {
 
 	temporary_key_pair_type = var.temporary_key_pair_type
 	ssh_username            = "ec2-user"
+  ssh_interface           = "session_manager"
 
   source_ami_filter {
     filters = {
