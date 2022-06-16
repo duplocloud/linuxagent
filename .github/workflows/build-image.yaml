@@ -25,6 +25,8 @@ jobs:
         uses: aws-actions/configure-aws-credentials@v1
         with:
           role-to-assume: arn:aws:iam::227120241369:role/packer-builder
+          role-session-name: github-duplocloud-linuxagent
+          role-duration-seconds: 7200
           role-skip-session-tagging: true
           aws-region: us-west-2
 
