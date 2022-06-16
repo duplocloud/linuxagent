@@ -26,7 +26,7 @@ jobs:
         with:
           role-to-assume: arn:aws:iam::227120241369:role/packer-builder
           role-session-name: github-duplocloud-linuxagent
-          role-duration-seconds: 7200
+          role-duration-seconds: 3600
           role-skip-session-tagging: true
           aws-region: us-west-2
 
