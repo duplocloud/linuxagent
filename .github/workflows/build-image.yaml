@@ -25,6 +25,7 @@ jobs:
         uses: aws-actions/configure-aws-credentials@v1
         with:
           role-to-assume: arn:aws:iam::227120241369:role/packer-builder
+          role-skip-session-tagging: true
           aws-region: us-west-2
 
       # GCP credentials
