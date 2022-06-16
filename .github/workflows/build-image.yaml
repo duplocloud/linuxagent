@@ -64,6 +64,7 @@ jobs:
           packer validate -syntax-only ./packer
 
           # Build the images
-          packer -color=false -on-error=cleanup -parallel-builds=10 -timestamp-ui \
+          packer build \
+            -color=false -on-error=cleanup -parallel-builds=10 -timestamp-ui \
             -only=amazon-ebs.ubuntu-22,amazon-ebs.amazonlinux-2,googlecompute.ubuntu-22 \
             ./packer
