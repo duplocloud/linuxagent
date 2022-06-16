@@ -1,0 +1,49 @@
+name: 'Image: Agent - duplocloud-docker'
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Override Version'
+        required: false
+        default: '' # default to dev version
+env:
+  duplo_host: https://prod.duplocloud.net
+  duplo_token: "${{ secrets.PROD_DUPLO_TOKEN }}"
+jobs:
+  build-all:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      # AWS credentials
+      - name: Tenant AWS JIT
+        uses: duplocloud/ghactions-aws-jit@master
+        with:
+          tenant: github
+      - name: Packer AWS Role
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          role-to-assume: arn:aws:iam::227120241369:role/packer-builder
+          aws-region: us-west-2
+
+      # GCP credentials
+      - name: Packer GCP Service Account
+        uses: google-github-actions/auth@v0.4.0
+        with:
+          workload_identity_provider: 'projects/17033121890/locations/global/workloadIdentityPools/duplo-githubactions/providers/duplo-githubactions'
+          service_account: 'packer@msp-duplocloud-01.iam.gserviceaccount.com'
+
+      # Build images
+      - name: Validate Packer Template
+        uses: hashicorp/packer-github-actions@master
+        with:
+          command: validate
+          arguments: -syntax-only
+          target: packer.pkr.hcl
+      - name: Build Images
+        uses: hashicorp/packer-github-actions@master
+        with:
+          command: build
+          arguments: "-color=false"
+          target: ./packer
