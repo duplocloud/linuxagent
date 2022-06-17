@@ -83,6 +83,7 @@ jobs:
         env:
           ONLY_BUILDERS: "${{ github.event.inputs.only_builders }}"
           PKR_VAR_image_version: "${{ github.event.inputs.image_version }}"
+          PKR_VAR_agent_git_ref: "${{ github.sha }}"
       
       # Upload the image manifest
       - name: Attach Manifest

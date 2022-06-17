@@ -9,6 +9,12 @@ DAEMON_NAME="NetworkAgentV2"
 DAEMON_DIR='/usr/local/src/AgentV2'
 PYTHON_PATH="$DAEMON_DIR/flask/bin"
 DAEMON="$DAEMON_DIR/NetworkAgentV2.py"
+DOWNLOAD_URL="https://api.github.com/repos/duplocloud/linuxagent/contents/AgentAmazonLinux2"
+
+if [ -z "${DOWNLOAD_REF:-}" ]
+then DOWNLOAD_REF=''
+else DOWNLOAD_REF="?ref=${DOWNLOAD_REF}"
+fi
 
 if [ -d $DAEMON_DIR ]; then
    echo "$DAEMON_DIR directory exists"
@@ -42,17 +48,18 @@ py3Install () {
   yes | flask/bin/pip install python-pytun
   yes | flask/bin/pip install --upgrade python-iptables
   yes | flask/bin/pip install docker
+  yes | flask/bin/pip install boto3
 
    #########
    cd $DAEMON_DIR
-   curl -H "Accept: application/vnd.github.v3.raw" -O -L https://api.github.com/repos/duplocloud/linuxagent/contents/AgentAmazonLinux2/NetworkAgentV2.py
+   curl -H "Accept: application/vnd.github.v3.raw" -o NetworkAgentV2.py -L "$DOWNLOAD_URL/NetworkAgentV2.py$DOWNLOAD_REF"
    chmod a+x NetworkAgentV2.py
    cat NetworkAgentV2.py
 
    #########
    cd /lib/systemd/system
    echo $PWD
-   sudo curl -H "Accept: application/vnd.github.v3.raw" -O -L https://api.github.com/repos/duplocloud/linuxagent/contents/AgentAmazonLinux2/NetworkAgent.service
+   sudo curl -H "Accept: application/vnd.github.v3.raw" -o NetworkAgent.service -L "$DOWNLOAD_URL/NetworkAgent.service$DOWNLOAD_REF"
    ######
    ls -alt NetworkAgent.service
    ls -alt $DAEMON_DIR

@@ -18,8 +18,11 @@ import os
 import platform
 import docker
 from logging import handlers, Formatter
+import re
 import base64
 import boto3  # /usr/local/src/AgentV2/flask/bin/pip  install boto3
+import google.auth  # /usr/local/src/AgentV2/flask/bin/pip  install google-auth
+import google.auth.transport.requests
 
 app = Flask(__name__)
 
@@ -592,6 +595,28 @@ def downloadImageEcr(aInImageName):
                  aInImageName + ' region_name=' + region_name)
 
 
+def downloadImageGcr(aInImageName):
+    logger.debug('Starting downloading GCR is_gcr=True ... ' + aInImageName)
+
+    # get the registry
+    registry = aInImageName.split('/', 2)[0]
+
+    # create docker client
+    url = 'http://127.0.0.1:4243'
+    docker_client = docker.DockerClient(base_url=url, version='auto')
+
+    # get the token.
+    creds, project = google.auth.default()
+    auth_req = google.auth.transport.requests.Request()
+    creds.refresh(auth_req)
+
+    # docker_client login
+    rep = docker_client.login('oauth2accesstoken', creds.token, registry=registry, reauth=True)
+    rep = docker_client.images.pull(aInImageName)
+
+    logger.debug('Finished downloading GCR repo is_gcr=True image=' + aInImageName)
+
+
 def getRegionNameAndAccountFromImageName(aInImageName):
     arr1 = aInImageName.split(".dkr.ecr.")
     if len(arr1) > 0 and arr1[1] is not None:
@@ -653,18 +678,20 @@ def updateImages():
             "updateImages: Required Images has been set from master api")
 
     for lImage in lNeededImages:
-        is_ecr = "dkr.ecr" in lImage
-        logger.debug('Required Image Name ' +
-                     lImage + ' is_ecr?=' + str(is_ecr))
+        is_gcr = re.match(r'^(?:[^/]*\.)?gcr\.io\/', lImage, re.I)
+        is_ecr = re.match(r'^[^/]*\.dkr.ecr\.[^/]*\.amazonaws.com\/', lImage, re.I)
+
+        logger.debug('Required Image Name ' + lImage + ' is_ecr?=' + str(is_ecr) + ' is_gcr?=' + str(is_gcr))
         #lRequiredRepo = lImage.split(":")[0]
         if lLocalImages.has_key(lImage):
             logger.debug('Required image exists ' + lImage)
         else:
             try:
-                logger.debug('++++++++++ Need to download ecr Image=' +
-                             lImage + ' is_ecr?=' + str(is_ecr))
+                logger.debug('++++++++++ Need to download Image ' + lImage)
                 if is_ecr:
                     downloadImageEcr(lImage)
+                elif is_gcr:
+                    downloadImageGcr(lImage)
                 else:
                     downloadImage(lImage)
             except:

@@ -17,6 +17,9 @@ import traceback
 import os
 import platform
 import docker
+import re
+import base64
+import boto3        # /usr/local/src/AgentV2/flask/bin/pip  install boto3
 from logging import handlers, Formatter
 
 app = Flask(__name__)
@@ -311,6 +314,47 @@ def downloadImage(aInImageName):
                 r.json()))
 
 
+def downloadImageEcr(aInImageName):
+    logger.debug('Starting downloading ECR is_ecr=True ... ' + aInImageName)
+    region_name, account_id = getRegionNameAndAccountFromImageName(aInImageName)
+    #logger.debug('downloading ECR is_ecr=True region_name=' +  region_name  )
+
+    # login to ecr
+    ecr_client = boto3.client('ecr', region_name=region_name)
+
+    # create docker client
+    url = 'http://127.0.0.1:4243'
+    docker_client = docker.DockerClient(base_url=url, version='auto')
+
+    # get token
+    token = ecr_client.get_authorization_token(registryIds=[
+        account_id,
+    ])
+    username, password = base64.b64decode(
+        token['authorizationData'][0]['authorizationToken']).decode().split(':')
+    registry = token['authorizationData'][0]['proxyEndpoint']
+
+    # docker_client login
+    rep = docker_client.login(
+        username, password, registry=registry, reauth=True)
+    # image_name = aInImageName #'128329325849.dkr.ecr.us-west-2.amazonaws.com/reoecr1:latest' repodel1
+    rep = docker_client.images.pull(aInImageName)
+
+    logger.debug('Finished downloading ECR repo is_ecr=True image=' +
+                 aInImageName + ' region_name=' + region_name)
+
+
+def getRegionNameAndAccountFromImageName(aInImageName):
+    arr1 = aInImageName.split(".dkr.ecr.")
+    if len(arr1) > 0 and arr1[1] is not None:
+        region_name = arr1[1].split(".")[0]
+        account_id = arr1[0]
+    else:
+        logger.debug("region_name invalid ECR aInImageName " + aInImageName)
+    logger.debug("region_name=" + region_name + " account_id=" + account_id)
+    return (region_name, account_id)
+
+
 def updateImages():
     global TenantID
     global g_RequiredImages
@@ -360,14 +404,19 @@ def updateImages():
         logger.debug("updateImages: Required Images has been set from master api")
 
     for lImage in lNeededImages:
-        logger.debug('Required Image Name ' + lImage)
+        is_ecr = re.match(r'^[^/]*\.dkr.ecr\.[^/]*\.amazonaws.com\/', lImage, re.I)
+
+        logger.debug('Required Image Name ' + lImage + ' is_ecr?=' + str(is_ecr))
         # lRequiredRepo = lImage.split(":")[0]
         if lImage in lLocalImages:
             logger.debug('Required image exists ' + lImage)
         else:
             logger.debug('++++++++++ Need to download Image ' + lImage)
             try:
-                downloadImage(lImage)
+                if is_ecr:
+                    downloadImageEcr(lImage)
+                else:
+                    downloadImage(lImage)
             except Exception as e:
                 nfltErr = "Error 3 The download error was : %s " % e
                 logger.error( nfltErr)
