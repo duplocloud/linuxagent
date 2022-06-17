@@ -7,6 +7,12 @@ AGENT='NetworkAgentV2'
 INSTALL_DIR='/usr/local/src'
 UDPTUNNEL='udptunnelv1'
 AGENT_DIR='AgentV2'
+DOWNLOAD_URL="https://api.github.com/repos/duplocloud/linuxagent/contents/Agent"
+
+if [ -z "${DOWNLOAD_REF:-}" ]
+then DOWNLOAD_REF=''
+else DOWNLOAD_REF="?ref=${DOWNLOAD_REF}"
+fi
 
 
 #
@@ -97,11 +103,11 @@ rm -rf flask
 #
 # Step 5: Fetch Agent code from the repository
 #
-curl -H "Accept: application/vnd.github.v3.raw" -O -L https://api.github.com/repos/duplocloud/linuxagent/contents/Agent/AgentV2/NetworkAgentV2.py
+curl -H "Accept: application/vnd.github.v3.raw" -o NetworkAgentV2.py -L "$DOWNLOAD_URL/AgentV2/NetworkAgentV2.py$DOWNLOAD_REF"
 
-curl -H "Accept: application/vnd.github.v3.raw" -O -L https://api.github.com/repos/duplocloud/linuxagent/contents/Agent/AgentV2/NetworkSetupV2.py
+curl -H "Accept: application/vnd.github.v3.raw" -o NetworkSetupV2.py -L "$DOWNLOAD_URL/AgentV2/NetworkSetupV2.py$DOWNLOAD_REF"
 
-curl -H "Accept: application/vnd.github.v3.raw" -O -L https://api.github.com/repos/duplocloud/linuxagent/contents/Agent/AgentV2/udptunnelv1.py
+curl -H "Accept: application/vnd.github.v3.raw" -o udptunnelv1.py -L "$DOWNLOAD_URL/AgentV2/udptunnelv1.py$DOWNLOAD_REF"
 
 chmod a+x NetworkAgentV2.py
 chmod a+x udptunnelv1.py
@@ -157,8 +163,8 @@ ubuntuInstall () {
    echo "Performing Ubuntu Install "
    cd /etc/init/
    echo $PWD
-   curl -H "Accept: application/vnd.github.v3.raw" -O -L https://api.github.com/repos/duplocloud/linuxagent/contents/Agent/udptunnel.conf
-   curl -H "Accept: application/vnd.github.v3.raw" -O -L https://api.github.com/repos/duplocloud/linuxagent/contents/Agent/NetworkAgent.conf
+   sudo curl -H "Accept: application/vnd.github.v3.raw" -o udptunnel.conf -L "$DOWNLOAD_URL/udptunnel.conf$DOWNLOAD_REF"
+   sudo curl -H "Accept: application/vnd.github.v3.raw" -o NetworkAgent.conf -L "$DOWNLOAD_URL/NetworkAgent.conf$DOWNLOAD_REF"
    sudo start NetworkAgent
 }
 
@@ -166,10 +172,8 @@ ubuntu16PlusInstall () {
    echo "Performing Ubuntu 16.04 or later releaseInstall "
    cd /etc/systemd/system
    echo $PWD
-   #curl -H "Accept: application/vnd.github.v3.raw" -O -L https://api.github.com/repos/duplocloud/linuxagent/contents/Agent/udptunnel.service
-   #curl -H "Accept: application/vnd.github.v3.raw" -O -L https://api.github.com/repos/duplocloud/linuxagent/contents/Agent/NetworkAgent.service
-   curl -H "Accept: application/vnd.github.v3.raw" -O -L https://api.github.com/repos/duplocloud/linuxagent/contents/Agent/NetworkAgent.service
-   #cp /home/merchantsameer2014/NetworkAgent.service /etc/systemd/system
+   #sudo curl -H "Accept: application/vnd.github.v3.raw" -o udptunnel.service -L "$DOWNLOAD_URL/udptunnel.service$DOWNLOAD_REF"
+   sudo curl -H "Accept: application/vnd.github.v3.raw" -o NetworkAgent.service -L "$DOWNLOAD_URL/NetworkAgent.service$DOWNLOAD_REF"
    sudo systemctl daemon-reload
    sudo systemctl enable NetworkAgent.service
    sudo systemctl start NetworkAgent.service

@@ -1,5 +1,6 @@
 # Overall settings
 variable "image_version" { default = "dev" }
+variable "agent_git_ref" { default = "master" }
 variable "default_disk_size" { default = 35 }
 variable "temporary_key_pair_type" { default = "ed25519" }
 
@@ -47,27 +48,39 @@ build {
 	// Install - Amazon Linux 2
 	provisioner "shell" {
 		script = "${path.root}/../AgentAmazonLinux2/Setup.sh"
+		environment_vars = [
+			"DOWNLOAD_REF=${var.agent_git_ref}"
+		]
 		only   = [ "amazon-ebs.amazonlinux-2" ]
 	}
 
 	// Install - Ubuntu 18
 	provisioner "shell" {
 		script = "${path.root}/../Agent/Setup_16.04.sh"
-		environment_vars = [ "DEBIAN_FRONTEND=noninteractive" ]
+		environment_vars = [
+			"DOWNLOAD_REF=${var.agent_git_ref}",
+			"DEBIAN_FRONTEND=noninteractive"
+		]
 		only   = [ "amazon-ebs.ubuntu-18", "googlecompute.ubuntu-18" ]
 	}
 
 	// Install - Ubuntu 20
 	provisioner "shell" {
 		script = "${path.root}/../AgentUbuntu20/Setup.sh"
-		environment_vars = [ "DEBIAN_FRONTEND=noninteractive" ]
+		environment_vars = [
+			"DOWNLOAD_REF=${var.agent_git_ref}",
+			"DEBIAN_FRONTEND=noninteractive"
+		]
 		only   = [ "amazon-ebs.ubuntu-20", "googlecompute.ubuntu-20" ]
 	}
 
 	// Install - Ubuntu 22
 	provisioner "shell" {
 		script = "${path.root}/../AgentUbuntu22/Setup.sh"
-		environment_vars = [ "DEBIAN_FRONTEND=noninteractive" ]
+		environment_vars = [
+			"DOWNLOAD_REF=${var.agent_git_ref}",
+			"DEBIAN_FRONTEND=noninteractive"
+		]
 		only   = [ "amazon-ebs.ubuntu-22", "googlecompute.ubuntu-22" ]
 	}
 
