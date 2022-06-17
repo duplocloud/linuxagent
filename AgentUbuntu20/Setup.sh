@@ -42,6 +42,8 @@ py3Install () {
   yes | flask/bin/pip install python-pytun
   yes | flask/bin/pip install --upgrade python-iptables
   yes | flask/bin/pip install docker
+  yes | flask/bin/pip install boto3
+  yes | flask/bin/pip install google-auth
 
    #########
    cd $DAEMON_DIR
