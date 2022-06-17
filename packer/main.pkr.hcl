@@ -71,21 +71,6 @@ build {
 		only   = [ "amazon-ebs.ubuntu-22", "googlecompute.ubuntu-22" ]
 	}
 
-	// Docker credential helpers - GCP
-	provisioner "file" {
-		source      = "${path.root}/files/docker-config.gcloud.json"
-		destination = "/tmp/docker-config.gcloud.json"
-		only   = ["googlecompute.ubuntu-18", "googlecompute.ubuntu-20", "googlecompute.ubuntu-22"]
-	}
-	provisioner "shell" {
-		inline = [
-			"sudo mkdir -p /root/.docker",
-			"sudo install -o root -g root -m 640 /tmp/docker-config.gcloud.json /root/.docker/config.json",
-			"sudo rm -f /tmp/docker-config.gcloud.json"
-		]
-		only   = ["googlecompute.ubuntu-18", "googlecompute.ubuntu-20", "googlecompute.ubuntu-22"]
-	}
-
 	post-processor "manifest" {}
 
   post-processor "shell-local" {
