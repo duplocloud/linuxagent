@@ -1,5 +1,6 @@
 # Ignore packer manifest
 packer-manifest.json
+snippet-*.json
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
