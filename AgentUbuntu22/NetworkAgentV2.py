@@ -432,7 +432,7 @@ def updateImages():
 
         logger.debug('Required Image Name ' + lImage + ' is_ecr?=' + str(is_ecr) + ' is_gcr?=' + str(is_gcr))
         # lRequiredRepo = lImage.split(":")[0]
-        if lLocalImages.has_key(lImage):
+        if lImage in lLocalImages:
             logger.debug('Required image exists ' + lImage)
         else:
             logger.debug('++++++++++ Need to download Image ' + lImage)
