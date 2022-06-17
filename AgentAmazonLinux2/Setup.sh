@@ -42,6 +42,7 @@ py3Install () {
   yes | flask/bin/pip install python-pytun
   yes | flask/bin/pip install --upgrade python-iptables
   yes | flask/bin/pip install docker
+  yes | flask/bin/pip install boto3
 
    #########
    cd $DAEMON_DIR
