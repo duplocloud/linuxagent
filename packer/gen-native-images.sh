@@ -35,6 +35,7 @@ $nicename images:"
             s/ap-northeast-1/Tokyo/g
             s/ap-south-1/Mumbai/g
             s/eu-west-2/London/g
+            s/eu-central-1/Frankfurt/g
         ')"
 
         case "$name" in
