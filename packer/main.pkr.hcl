@@ -37,11 +37,26 @@ build {
 
 	// OS updates - Ubuntu
 	provisioner "shell" {
-		inline = [ "sudo apt-get clean -y", "sudo apt-get update -y", "sudo apt-get upgrade -y" ]
+		inline = [
+			"sudo apt-get clean -y",
+			"sudo apt-get update -y",
+			"sudo apt-get upgrade -y"
+		]
 		environment_vars = [ "DEBIAN_FRONTEND=noninteractive" ]
 		only   = [
 			"amazon-ebs.ubuntu-18", "amazon-ebs.ubuntu-20", "amazon-ebs.ubuntu-22",
 			"googlecompute.ubuntu-18", "googlecompute.ubuntu-20", "googlecompute.ubuntu-22"
+		]
+	}
+
+	// SSHD drop-in (temporarily allow RSA keys)
+	provisioner "shell" {
+		inline = [
+			"sudo sh -c 'echo \"PubkeyAcceptedKeyTypes +ssh-rsa\" >/etc/ssh/sshd_config.d/rsa.conf'",
+		]
+		only   = [
+			"amazon-ebs.ubuntu-20", "amazon-ebs.ubuntu-22",
+			"googlecompute.ubuntu-20", "googlecompute.ubuntu-22"
 		]
 	}
 
@@ -82,6 +97,34 @@ build {
 			"DEBIAN_FRONTEND=noninteractive"
 		]
 		only   = [ "amazon-ebs.ubuntu-22", "googlecompute.ubuntu-22" ]
+	}
+
+	// Cleanup - Amazon Linux
+	provisioner "shell" {
+		inline = [ 
+			"sudo rm -rf /home/ec2-user/.history /home/ec2-user/authorized_keys", // user history and SSH authorized keys
+		]
+		only   = [ "amazon-ebs.amazonlinux-2" ]
+	}
+
+	// Cleanup - Ubuntu
+	provisioner "shell" {
+		inline = [ 
+			"sudo rm -rf /home/ubuntu/.history /home/ubuntu/authorized_keys", // user history and SSH authorized keys
+		]
+		only   = [
+			"amazon-ebs.ubuntu-18", "amazon-ebs.ubuntu-20", "amazon-ebs.ubuntu-22",
+			"googlecompute.ubuntu-18", "googlecompute.ubuntu-20", "googlecompute.ubuntu-22"
+		]
+	}
+
+	// Cleanup - all systems
+	provisioner "shell" {
+		inline = [ 
+			"sudo rm -rf /etc/ssh/*_key /etc/ssh/*_key.pub",         // host keys
+			"sudo rm -rf /root/.history /root/.ssh/authorized_keys", // root user history and SSH authorized keys
+			"sudo rm -rf /tmp/*"
+		]
 	}
 
 	post-processor "manifest" {}
