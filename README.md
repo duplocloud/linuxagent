@@ -9,7 +9,7 @@
 Run the `Image: Agent - duplocloud-docker` action to build both AWS and GCP images.
 
 - `image_version`:  set this to `release-MONTH-YEAR` to build a release (no underscores allowed)
-- `only_builders`:  you can change this build only certain images (packer `-only` syntax)
+- `only_builders`:  set this to `all` for release - you can also change this build only certain images (packer `-only` syntax)
 
 ### Options
 
