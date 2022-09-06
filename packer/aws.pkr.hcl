@@ -15,6 +15,7 @@ locals {
     "us-west-1",
     "us-west-2",
     "eu-central-1",
+    "eu-west-1",
     "eu-west-2",
     "ap-northeast-1",
     "ap-south-1"
