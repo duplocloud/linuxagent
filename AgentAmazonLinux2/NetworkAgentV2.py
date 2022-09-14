@@ -32,7 +32,8 @@ RegistryToken = 'Empty'
 EngineEndpoint = 'Empty'
 NetworkProvider = 'custom'
 g_RequiredImages = None
-
+g_NonDefaultRegistryTokenByName = None
+g_NonDefaultRegistryNameByImage = None
 
 class Minion:
     def __init__(self, name, subnet, directAddress, directIpAddr):
@@ -251,6 +252,8 @@ def UpdateMinionState():
     global NetworkProvider
     global g_udpmode
     global g_RequiredImages
+    global g_NonDefaultRegistryTokenByName
+    global g_NonDefaultRegistryNameByImage
 
     lSubnet = request.json['Subnet']
     lMinionName = request.json['Name']
@@ -274,6 +277,12 @@ def UpdateMinionState():
     else:
         logger.debug('UpdateMinionState: Required Images was not set')
 
+    if 'NonDefaultRegistryTokenByName' in request.json:
+        g_NonDefaultRegistryTokenByName = request.json['NonDefaultRegistryTokenByName']
+
+    if 'NonDefaultRegistryNameByImage' in request.json:
+        g_NonDefaultRegistryNameByImage = request.json['NonDefaultRegistryNameByImage']
+
     return jsonify({}), 201
 
 
@@ -296,11 +305,21 @@ def updateTopologyThread():
 
 def downloadImage(aInImageName):
     global RegistryToken
+    global g_NonDefaultRegistryTokenByName
+    global g_NonDefaultRegistryNameByImage
     logger.debug('Starting downloading ... ' + aInImageName)
     lImageDwldUrl = 'http://127.0.0.1:4243/images/create?fromImage=' + aInImageName
     lPayload = {}
 
-    headers = {'X-Registry-Auth': RegistryToken}
+    imagePullToken = RegistryToken
+    if (
+            g_NonDefaultRegistryNameByImage and aInImageName in g_NonDefaultRegistryNameByImage 
+            and g_NonDefaultRegistryTokenByName and g_NonDefaultRegistryNameByImage[aInImageName] in g_NonDefaultRegistryTokenByName
+        ):
+        imagePullToken = g_NonDefaultRegistryTokenByName[g_NonDefaultRegistryNameByImage[aInImageName]]
+
+    headers = {'X-Registry-Auth': imagePullToken}
+
     r = requests.post(lImageDwldUrl, data=aInImageName, headers=headers)
 
     if r.ok:
