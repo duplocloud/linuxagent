@@ -1,13 +1,34 @@
 #!/bin/bash -eu
 #
-# Work-in-progress tool to generate a JSON snippet for BuiltInNativeImages.json
+# Tool to generate a JSON snippet for BuiltInNativeImages.json
 #
 
+# Utility functions.
+out() { echo "$0:" "$@" ; }
+err() { echo "$0:" "$@" 1>&2 ; }
+die() { err "$@" ; exit 1 ; }
+
+# Sanity checks.
+if file "${BASH_SOURCE[0]}" | grep -q CRLF
+then die 'STOP!
+
+Your Windows system has converted LF to CRLF.  The script will not function properly.
+
+Please re-checkout the files after running:
+  git config core.autocrlf false
+'
+fi
+if ! command -v jq >/dev/null 2>&1
+then die "JQ must be installed"
+fi
+if ! [ "$(git config core.autocrlf)" == "false" ]
+then die "git config core.autocrlf must be set to 'false' for this repo"
+fi
+
+# Step 1 - Get all image IDs from packer and use them to generate a JSON snippet
+out "NativeImages JSON: generating snippet"
 names="$(jq -r '.builds[] | select(.builder_type == "amazon-ebs") | .name' <packer-manifest.json)"
 json=""
-
-echo "Generating snippet-NativeImages.json"
-
 for name in $names
 do
     nicename="$(echo $name | sed -e '
@@ -63,4 +84,22 @@ $nicename images:"
 done
 
 echo "[$json
-]" >snippet-NativeImages.json
+]" >snippet-temp.json
+jq '. | map(select(.Name == "Docker-Duplo-Oregon-Ubuntu18") | .Name = "Docker-Duplo") + .' <snippet-temp.json >snippet-NativeImages.json
+out "NativeImages JSON: snippet done"
+
+# Step 2 - Build a new native images JSON
+: ${DUPLO_SOURCE=../../duplo}
+snippet="$(pwd -P)/snippet-NativeImages.json"
+(cd "$DUPLO_SOURCE" &&
+
+    # Join the default Duplo docker image ...
+    # ... with the remaining Duplo docker images
+    # ... and then all other images
+    jq 'input + (. | map(select(.Name | startswith("Docker-Duplo") | not)))' \
+        config/V1/BuiltInNativeImages.json  "$snippet" > temp.json &&
+    
+    # Replace the existing JSON
+    mv temp.json config/V1/BuiltInNativeImages.json
+)
+
