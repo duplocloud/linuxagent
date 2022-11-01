@@ -95,7 +95,7 @@ jobs:
   # If this is a release build, create a PR to update Duplo
   autoupdate-duplo-images:
     runs-on: ubuntu-latest
-    if: ${{ startsWith(github.event.inputs.image_version, "release-") }}
+    if: "${{ startsWith(github.event.inputs.image_version, 'release-') }}"
     steps:
       # Get the code for the image JSON generation, and the code for Duplo master.
       - name: Checkout duplo-infra
