@@ -89,5 +89,54 @@ jobs:
       - name: Attach Manifest
         uses: actions/upload-artifact@v3
         with:
-          name: packer-manifest
+          name: packer-manifest.json
           path: packer-manifest.json
+
+  # If this is a release build, create a PR to update Duplo
+  autoupdate-duplo-images:
+    runs-on: ubuntu-latest
+    if: ${{ startsWith(github.event.inputs.image_version, "release-") }}
+    steps:
+      # Get the code for the image JSON generation, and the code for Duplo master.
+      - name: Checkout duplo-infra
+        uses: actions/checkout@v3
+      - name: Checkout duplo (backend)
+        uses: actions/checkout@v3
+        with:
+          repository: duplocloud-internal/duplo
+          ref: master                 # always start from master
+          token: ${{ secrets.RELEASE_BOT_GITHUB_TOKEN }}
+          path: duplo-backend
+      
+      # Download the image manifest
+      - name: Download Manifest
+        uses: actions/download-artifact@v3
+        with:
+          name: packer-manifest.json
+          path: packer
+
+      # Run the script to generate new image JSON.
+      - name: Tenant AWS JIT
+        uses: duplocloud/ghactions-aws-jit@master
+        with:
+          tenant: github
+      - name: Update duplo images JSON
+        run: |
+          git config core.autocrlf false
+          cd packer
+          DUPLO_SOURCE=../duplo-backend ./gen-native-images.sh
+      
+      # Create a PR
+      - name: Create Pull Request
+        uses: peter-evans/create-pull-request@v4
+        with:
+          title: '[duplo-bot] Update Duplo Docker AMI(s)'
+          branch: auto-update/duplo-docker-amis
+          base: master
+          add-paths: config/V1/BuiltInNativeImages.json
+          commit-message: '[duplo-bot] Update Duplo Docker AMI(s)'
+          body: 'Automated update of Duplo Docker AMI(s)'
+          committer: "${{ env.git_user }} <${{ env.git_email }}>"
+          delete-branch: true
+          path: duplo-backend
+          token: ${{ secrets.RELEASE_BOT_GITHUB_TOKEN }}
