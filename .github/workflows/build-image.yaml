@@ -96,6 +96,8 @@ jobs:
   autoupdate-duplo-images:
     runs-on: ubuntu-latest
     if: "${{ startsWith(github.event.inputs.image_version, 'release-') }}"
+    needs:
+      - build-all
     steps:
       # Get the code for the image JSON generation, and the code for Duplo master.
       - name: Checkout duplo-infra
@@ -105,7 +107,7 @@ jobs:
         with:
           repository: duplocloud-internal/duplo
           ref: master                 # always start from master
-          token: ${{ env.duplo_token }}
+          token: ${{ secrets.RELEASE_BOT_GITHUB_TOKEN }}
           path: duplo-backend
       
       # Download the image manifest
@@ -139,4 +141,4 @@ jobs:
           committer: "${{ env.git_user }} <${{ env.git_email }}>"
           delete-branch: true
           path: duplo-backend
-          token: ${{ env.duplo_token }}
+          token: ${{ secrets.RELEASE_BOT_GITHUB_TOKEN }}
