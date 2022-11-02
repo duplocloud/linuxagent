@@ -11,6 +11,8 @@ on:
         required: false
         default: 'amazon-ebs.ubuntu-22,amazon-ebs.amazonlinux-2,googlecompute.ubuntu-22'
 env:
+  git_user: duplo-bot
+  git_email: joe+github-bot@duplocloud.net
   duplo_host: https://prod.duplocloud.net
   duplo_token: "${{ secrets.PROD_DUPLO_TOKEN }}"
 jobs:
