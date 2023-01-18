@@ -18,7 +18,8 @@ locals {
     "eu-west-1",
     "eu-west-2",
     "ap-northeast-1",
-    "ap-south-1"
+    "ap-south-1",
+    "sa-east-1"
   ]
 }
 
