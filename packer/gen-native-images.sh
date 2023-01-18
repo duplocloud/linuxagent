@@ -58,6 +58,7 @@ $nicename images:"
 	    s/eu-west-1/Ireland/g
             s/eu-west-2/London/g
             s/eu-central-1/Frankfurt/g
+            s/sa-east-1/SaoPaulo/g
         ')"
 
         case "$name" in
