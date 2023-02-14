@@ -44,6 +44,7 @@ py3Install () {
   # install virtualenv flask
   #virtualenv flask
   update-alternatives --install /usr/bin/python python /usr/bin/python3 10
+  python3.8 -m pip install pipenv
   python3 -m venv flask
   yes | flask/bin/pip install flask
   yes | flask/bin/pip install requests
