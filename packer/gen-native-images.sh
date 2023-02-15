@@ -86,7 +86,7 @@ done
 
 echo "[$json
 ]" >snippet-temp.json
-jq '. | map(select(.Name == "Docker-Duplo-Oregon-Ubuntu18") | .Name = "Docker-Duplo") + .' <snippet-temp.json >snippet-NativeImages.json
+jq '. | map(select(.Name == "Docker-Duplo-Oregon-Ubuntu22") | .Name = "Docker-Duplo") + .' <snippet-temp.json >snippet-NativeImages.json
 out "NativeImages JSON: snippet done"
 
 # Step 2 - Build a new native images JSON
