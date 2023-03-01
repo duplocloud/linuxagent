@@ -59,6 +59,7 @@ source "amazon-ebs" "ubuntu-18" {
     encrypted   = false
     volume_size = 35
     volume_type = "gp3"
+    delete_on_termination = true
   }
 
   # Source instance tags.
@@ -116,6 +117,7 @@ source "amazon-ebs" "ubuntu-20" {
     encrypted   = false
     volume_size = 35
     volume_type = "gp3"
+    delete_on_termination = true
   }
 
   # Source instance tags.
@@ -173,6 +175,7 @@ source "amazon-ebs" "ubuntu-22" {
     encrypted   = false
     volume_size = 35
     volume_type = "gp3"
+    delete_on_termination = true
   }
 
   # Source instance tags.
@@ -226,10 +229,11 @@ source "amazon-ebs" "amazonlinux-2" {
 
   # Customize the volumes
   launch_block_device_mappings {
-    device_name = "/dev/sda1"
+    device_name = "/dev/xvda"
     encrypted   = false
     volume_size = 35
     volume_type = "gp3"
+    delete_on_termination = true
   }
 
   # Source instance tags.
