@@ -15,9 +15,7 @@ env:
   git_email: joe+github-bot@duplocloud.net
   duplo_host: https://prod.duplocloud.net
   duplo_token: "${{ secrets.PROD_DUPLO_TOKEN }}"
-permissions:
-  id-token: write   # This is required for requesting the JWT
-  contents: read    # This is required for actions/checkout
+
 jobs:
   build-all:
     # Needed for GCP (OIDC): Add "id-token" with the intended permissions.
