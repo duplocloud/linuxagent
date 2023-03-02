@@ -15,6 +15,7 @@ env:
   git_email: joe+github-bot@duplocloud.net
   duplo_host: https://prod.duplocloud.net
   duplo_token: "${{ secrets.PROD_DUPLO_TOKEN }}"
+
 jobs:
   build-all:
     # Needed for GCP (OIDC): Add "id-token" with the intended permissions.
@@ -35,10 +36,6 @@ jobs:
           service_account: 'packer@msp-duplocloud-01.iam.gserviceaccount.com'
 
       # AWS credentials
-      - name: Tenant AWS JIT
-        uses: duplocloud/ghactions-aws-jit@master
-        with:
-          tenant: github
       - name: Packer AWS Role
         uses: aws-actions/configure-aws-credentials@v1
         with:
@@ -120,10 +117,6 @@ jobs:
           path: packer
 
       # Run the script to generate new image JSON.
-      - name: Tenant AWS JIT
-        uses: duplocloud/ghactions-aws-jit@master
-        with:
-          tenant: github
       - name: Update duplo images JSON
         run: |
           git config core.autocrlf false
