@@ -8,19 +8,22 @@ variable "aws_iam_instance_profile" { default = "duploservices-github" }
 
 # Calculated settings.
 locals {
+  is_govcloud  = (var.aws_region=="us-gov-west-1" || var.aws_region=="us-gov-east-1")
+  ubuntu_owners = local.is_govcloud ? ["513442679011"] : ["099720109477"]
+
   # AMI regions if public
-  ami_regions = !local.is_public ? [] : [
-    "us-east-1",
-    "us-east-2",
-    "us-west-1",
-    "us-west-2",
-    "eu-central-1",
-    "eu-west-1",
-    "eu-west-2",
-    "ap-northeast-1",
-    "ap-south-1",
-    "sa-east-1"
-  ]
+  ami_regions = !local.is_public ? [] : local.is_govcloud ? ["us-gov-west-1", "us-gov-east-1"] : [
+      "us-east-1",
+      "us-east-2",
+      "us-west-1",
+      "us-west-2",
+      "eu-central-1",
+      "eu-west-1",
+      "eu-west-2",
+      "ap-northeast-1",
+      "ap-south-1",
+      "sa-east-1"
+    ]
 }
 
 source "amazon-ebs" "ubuntu-18" {
@@ -45,7 +48,7 @@ source "amazon-ebs" "ubuntu-18" {
       virtualization-type = "hvm"
     }
     most_recent = true
-    owners      = ["099720109477"]
+    owners      = local.ubuntu_owners
   }
 
   # Build a public AMI
@@ -103,7 +106,7 @@ source "amazon-ebs" "ubuntu-20" {
       virtualization-type = "hvm"
     }
     most_recent = true
-    owners      = ["099720109477"]
+    owners      = local.ubuntu_owners
   }
 
   # Build a public AMI
@@ -161,7 +164,7 @@ source "amazon-ebs" "ubuntu-22" {
       virtualization-type = "hvm"
     }
     most_recent = true
-    owners      = ["099720109477"]
+    owners      = local.ubuntu_owners
   }
 
   # Build a public AMI
