@@ -189,10 +189,15 @@ jobs:
           path: duplo-backend
       
       # Download the image manifest
-      - name: Download Manifest
+      - name: Download Manifest (Commercial)
         uses: actions/download-artifact@v3
         with:
           name: packer-manifest.json
+          path: packer
+      - name: Download Manifest (Govcloud)
+        uses: actions/download-artifact@v3
+        with:
+          name: govcloud-packer-manifest.json
           path: packer
 
       # Run the script to generate new image JSON.
@@ -200,7 +205,7 @@ jobs:
         run: |
           git config core.autocrlf false
           cd packer
-          DUPLO_SOURCE=../duplo-backend ./gen-native-images.sh
+          INPUT_FILES='packer-manifest.json govcloud-packer-manifest.json' DUPLO_SOURCE=../duplo-backend ./gen-native-images.sh
       
       # Create a PR
       - name: Create Pull Request
