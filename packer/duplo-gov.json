@@ -1,0 +1,7 @@
+{
+	"aws_region": "us-gov-west-1",
+	"aws_vpc_id": "vpc-036b54f9f590fe98f",
+	"aws_subnet_id": "subnet-02d73234dd7ee5b43",
+	"aws_security_group_id": "sg-00943f4efd86b231e",
+	"aws_iam_instance_profile": "default-packer-instance"
+}
