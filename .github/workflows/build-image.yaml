@@ -6,10 +6,14 @@ on:
         description: 'Set the image version'
         required: false
         default: 'dev' # default to dev version
+      only_partition:
+        description: 'Only build this partition'
+        required: false
+        default: 'all'
       only_builders:
         description: 'Only run these builders'
         required: false
-        default: 'amazon-ebs.ubuntu-22,amazon-ebs.amazonlinux-2,googlecompute.ubuntu-22'
+        default: 'amazon-ebs.ubuntu-22,amazon-ebs.amazonlinux-2'
 env:
   git_user: duplo-bot
   git_email: joe+github-bot@duplocloud.net
@@ -17,7 +21,8 @@ env:
   duplo_token: "${{ secrets.PROD_DUPLO_TOKEN }}"
 
 jobs:
-  build-all:
+  build-commercial:
+    if: "${{ github.event.inputs.only_partition == 'all' || github.event.inputs.only_partition == 'commercial' }}"
     # Needed for GCP (OIDC): Add "id-token" with the intended permissions.
     permissions:
       contents: 'read'
@@ -58,7 +63,7 @@ jobs:
           sudo dpkg -i session-manager-plugin.deb
 
           # Install packer.
-          curl -o packer.zip https://releases.hashicorp.com/packer/1.8.1/packer_1.8.1_linux_amd64.zip
+          curl -o packer.zip https://releases.hashicorp.com/packer/1.8.6/packer_1.8.6_linux_amd64.zip
           mkdir -p /tmp/bin
           sudo unzip -d /tmp/bin packer.zip
           export PATH="/tmp/bin:$PATH"
@@ -90,13 +95,87 @@ jobs:
         with:
           name: packer-manifest.json
           path: packer-manifest.json
+  build-govcloud:
+    if: "${{ github.event.inputs.only_partition == 'all' || github.event.inputs.only_partition == 'govcloud' }}"
+    runs-on: ubuntu-latest
+    env:
+      duplo_host: https://qa-govcloud.duplocloud.net
+      duplo_token: "${{ secrets.GOVCLOUD_DUPLO_TOKEN }}"
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      # AWS credentials
+      - name: Tenant AWS JIT
+        uses: duplocloud/ghactions-aws-jit@master
+        with:
+          tenant: github
+
+      # AWS credentials
+      - name: Packer AWS Role
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ env.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ env.AWS_SECRET_ACCESS_KEY }}
+          aws-session-token: ${{ env.AWS_SESSION_TOKEN }}
+          aws-region: us-gov-west-1
+          role-to-assume: arn:aws-us-gov:iam::051848153245:role/packer-builder
+          role-session-name: github-duplocloud-linuxagent
+          role-chaining: true
+          role-duration-seconds: 3600
+          role-skip-session-tagging: true
+
+      # Build images
+      - name: Build VM Images
+        run: |
+          set -eu
+
+          # Install session manager.
+          curl -o session-manager-plugin.deb "https://s3.amazonaws.com/session-manager-downloads/plugin/latest/ubuntu_64bit/session-manager-plugin.deb"
+          sudo dpkg -i session-manager-plugin.deb
+
+          # Install packer.
+          curl -o packer.zip https://releases.hashicorp.com/packer/1.8.6/packer_1.8.6_linux_amd64.zip
+          mkdir -p /tmp/bin
+          sudo unzip -d /tmp/bin packer.zip
+          export PATH="/tmp/bin:$PATH"
+
+          # Validate the template.
+          packer validate -syntax-only ./packer
+
+          # Parse build options.
+          if [ "$ONLY_BUILDERS" = "all" ]; then
+            ONLY_BUILDERS="amazon-ebs.ubuntu-20,amazon-ebs.ubuntu-22,amazon-ebs.amazonlinux-2"
+          elif [ -n "$ONLY_BUILDERS" ]; then
+            ONLY_BUILDERS="-only=$ONLY_BUILDERS"
+          fi
+
+          # Build the images.
+          rm -f *packer-manifest.json # always be clean
+          packer build $ONLY_BUILDERS \
+            -color=false -on-error=cleanup -parallel-builds=10 -timestamp-ui \
+            -var-file=packer/duplo-gov.json \
+            ./packer
+          mv packer-manifest.json govcloud-packer-manifest.json
+          
+        env:
+          ONLY_BUILDERS: "${{ github.event.inputs.only_builders }}"
+          PKR_VAR_image_version: "${{ github.event.inputs.image_version }}"
+          PKR_VAR_agent_git_ref: "${{ github.sha }}"
+      
+      # Upload the image manifest
+      - name: Attach Manifest
+        uses: actions/upload-artifact@v3
+        with:
+          name: govcloud-packer-manifest.json
+          path: govcloud-packer-manifest.json
 
   # If this is a release build, create a PR to update Duplo
   autoupdate-duplo-images:
     runs-on: ubuntu-latest
-    if: "${{ startsWith(github.event.inputs.image_version, 'release-') }}"
+    if: "${{ startsWith(github.event.inputs.image_version, 'release-') && github.event.inputs.only_partition == 'all' }}"
     needs:
-      - build-all
+      - build-commercial
     steps:
       # Get the code for the image JSON generation, and the code for Duplo master.
       - name: Checkout duplo-infra
@@ -110,10 +189,15 @@ jobs:
           path: duplo-backend
       
       # Download the image manifest
-      - name: Download Manifest
+      - name: Download Manifest (Commercial)
         uses: actions/download-artifact@v3
         with:
           name: packer-manifest.json
+          path: packer
+      - name: Download Manifest (Govcloud)
+        uses: actions/download-artifact@v3
+        with:
+          name: govcloud-packer-manifest.json
           path: packer
 
       # Run the script to generate new image JSON.
@@ -121,7 +205,7 @@ jobs:
         run: |
           git config core.autocrlf false
           cd packer
-          DUPLO_SOURCE=../duplo-backend ./gen-native-images.sh
+          INPUT_FILES='packer-manifest.json govcloud-packer-manifest.json' DUPLO_SOURCE=../duplo-backend ./gen-native-images.sh
       
       # Create a PR
       - name: Create Pull Request

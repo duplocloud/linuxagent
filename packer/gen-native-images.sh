@@ -27,53 +27,57 @@ fi
 
 # Step 1 - Get all image IDs from packer and use them to generate a JSON snippet
 out "NativeImages JSON: generating snippet"
-names="$(jq -r '.builds[] | select(.builder_type == "amazon-ebs") | .name' <packer-manifest.json)"
 json=""
-for name in $names
+for input_file in ${INPUT_FILES:-packer-manifest.json}
 do
-    nicename="$(echo $name | sed -e '
-        s/amazonlinux-/AmazonLinux/g
-        s/ubuntu-/Ubuntu/g
-    ')"
-
-    echo "
-$nicename images:"
-    artifacts="$(
-        jq -r '.builds[] | select((.builder_type == "amazon-ebs") and .name == "'"$name"'") | .artifact_id' <packer-manifest.json |
-        tr ',' '\n'
-    )"
-    for artifact in $artifacts
+    names="$(jq -r '.builds[] | select(.builder_type == "amazon-ebs") | .name' <"$input_file")"
+    for name in $names
     do
-        image="${artifact#*:}"
-        region="${artifact%:*}"
-
-        niceregion="$(echo $region | sed -e '
-            s/us-east-1/NoVirginia/g
-            s/us-east-2/Ohio/g
-            s/us-west-1/California/g
-            s/us-west-2/Oregon/g
-            s/sa-east-1/SaoPaulo/g
-            s/ap-northeast-1/Tokyo/g
-            s/ap-south-1/Mumbai/g
-	    s/eu-west-1/Ireland/g
-            s/eu-west-2/London/g
-            s/eu-central-1/Frankfurt/g
-            s/sa-east-1/SaoPaulo/g
+        nicename="$(echo $name | sed -e '
+            s/amazonlinux-/AmazonLinux/g
+            s/ubuntu-/Ubuntu/g
         ')"
 
-        case "$name" in
-        amazon*)
-            user=ec2-user
-            ;;
-        ubuntu*)
-            user=ubuntu
-            ;;
-        esac
+        echo "
+$nicename images:"
+        artifacts="$(
+            jq -r '.builds[] | select((.builder_type == "amazon-ebs") and .name == "'"$name"'") | .artifact_id' <"$input_file" |
+            tr ',' '\n'
+        )"
+        for artifact in $artifacts
+        do
+            image="${artifact#*:}"
+            region="${artifact%:*}"
 
-        echo "$niceregion" "$image"
+            niceregion="$(echo $region | sed -e '
+                s/us-east-1/NoVirginia/g
+                s/us-east-2/Ohio/g
+                s/us-west-1/California/g
+                s/us-west-2/Oregon/g
+                s/sa-east-1/SaoPaulo/g
+                s/ap-northeast-1/Tokyo/g
+                s/ap-south-1/Mumbai/g
+                s/eu-west-1/Ireland/g
+                s/eu-west-2/London/g
+                s/eu-central-1/Frankfurt/g
+                s/sa-east-1/SaoPaulo/g
+                s/us-gov-west-1/UsGovWest1/g
+                s/us-gov-east-1/UsGovEast1/g
+            ')"
 
-        [ -n "$json" ] && json="${json},"
-        json="${json}
+            case "$name" in
+            amazon*)
+                user=ec2-user
+                ;;
+            ubuntu*)
+                user=ubuntu
+                ;;
+            esac
+
+            echo "$niceregion" "$image"
+
+            [ -n "$json" ] && json="${json},"
+            json="${json}
   {
     \"Name\": \"Docker-Duplo-${niceregion}-${nicename}\",
     \"ImageId\": \"${image}\",
@@ -81,6 +85,7 @@ $nicename images:"
     \"Username\": \"${user}\",
     \"Agent\": 0
   }"    
+        done
     done
 done
 
