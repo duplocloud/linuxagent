@@ -145,7 +145,7 @@ jobs:
 
           # Parse build options.
           if [ "$ONLY_BUILDERS" = "all" ]; then
-            ONLY_BUILDERS="amazon-ebs.ubuntu-20,amazon-ebs.ubuntu-22,amazon-ebs.amazonlinux-2"
+            ONLY_BUILDERS="-only=amazon-ebs.ubuntu-20,amazon-ebs.ubuntu-22,amazon-ebs.amazonlinux-2"
           elif [ -n "$ONLY_BUILDERS" ]; then
             ONLY_BUILDERS="-only=$ONLY_BUILDERS"
           fi
