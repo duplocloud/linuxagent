@@ -9,7 +9,7 @@ on:
       only_partition:
         description: 'Only build this partition'
         required: false
-        default: 'govcloud'
+        default: 'all'
       only_builders:
         description: 'Only run these builders'
         required: false
@@ -173,7 +173,7 @@ jobs:
   # If this is a release build, create a PR to update Duplo
   autoupdate-duplo-images:
     runs-on: ubuntu-latest
-    if: "${{ startsWith(github.event.inputs.image_version, 'release-') && (github.event.inputs.only_partition == 'all' || github.event.inputs.only_partition == 'commercial') }}"
+    if: "${{ startsWith(github.event.inputs.image_version, 'release-') && github.event.inputs.only_partition == 'all' }}"
     needs:
       - build-commercial
     steps:
