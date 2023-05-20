@@ -144,6 +144,7 @@ jobs:
           rm -f *packer-manifest.json # always be clean
           packer build $ONLY_BUILDERS \
             -color=false -on-error=cleanup -parallel-builds=10 -timestamp-ui \
+            -var-file=packer/duplo-gov.json \
             ./packer
           mv packer-manifest.json govcloud-packer-manifest.json
           
