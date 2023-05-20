@@ -49,17 +49,6 @@ build {
 		]
 	}
 
-	// SSHD drop-in (temporarily allow RSA keys)
-	provisioner "shell" {
-		inline = [
-			"sudo sh -c 'echo \"PubkeyAcceptedKeyTypes +ssh-rsa\" >/etc/ssh/sshd_config.d/rsa.conf'",
-		]
-		only   = [
-			"amazon-ebs.ubuntu-20", "amazon-ebs.ubuntu-22",
-			"googlecompute.ubuntu-20", "googlecompute.ubuntu-22"
-		]
-	}
-
 	// Install - Amazon Linux 2
 	provisioner "shell" {
 		script = "${path.root}/../AgentAmazonLinux2/Setup.sh"
