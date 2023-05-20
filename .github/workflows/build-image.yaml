@@ -98,9 +98,18 @@ jobs:
   build-govcloud:
     if: "${{ github.event.inputs.only_partition == 'all' || github.event.inputs.only_partition == 'govcloud' }}"
     runs-on: ubuntu-latest
+    env:
+      duplo_host: https://qa-govcloud.duplocloud.net
+      duplo_token: "${{ secrets.GOVCLOUD_DUPLO_TOKEN }}"
     steps:
       - name: Checkout
         uses: actions/checkout@v3
+
+      # # AWS credentials
+      # - name: Tenant AWS JIT
+      #   uses: duplocloud/ghactions-aws-jit@master
+      #   with:
+      #     tenant: github
 
       # AWS credentials
       - name: Packer AWS Role
@@ -109,7 +118,7 @@ jobs:
           aws-access-key-id: ${{ env.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ env.AWS_SECRET_ACCESS_KEY }}
           aws-session-token: ${{ env.AWS_SESSION_TOKEN }}
-          aws-region: us-west-2
+          aws-region: us-gov-west-1
           role-to-assume: arn:aws-us-gov:iam::051848153245:role/packer-builder
           role-session-name: github-duplocloud-linuxagent
           role-duration-seconds: 3600
