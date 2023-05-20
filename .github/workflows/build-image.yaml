@@ -9,7 +9,7 @@ on:
       only_partition:
         description: 'Only build this partition'
         required: false
-        default: 'all'
+        default: 'govcloud'
       only_builders:
         description: 'Only run these builders'
         required: false
