@@ -20,9 +20,11 @@ locals {
       "eu-central-1",
       "eu-west-1",
       "eu-west-2",
+      "eu-west-3",
       "ap-northeast-1",
       "ap-south-1",
-      "sa-east-1"
+      "sa-east-1",
+      "ca-central-1"
     ]
 }
 

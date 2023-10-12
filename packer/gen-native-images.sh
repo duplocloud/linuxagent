@@ -59,8 +59,10 @@ $nicename images:"
                 s/ap-south-1/Mumbai/g
                 s/eu-west-1/Ireland/g
                 s/eu-west-2/London/g
+                s/eu-west-3/Paris/g
                 s/eu-central-1/Frankfurt/g
                 s/sa-east-1/SaoPaulo/g
+                s/ca-central-1/CanadaCentral/g
                 s/us-gov-west-1/UsGovWest1/g
                 s/us-gov-east-1/UsGovEast1/g
             ')"
