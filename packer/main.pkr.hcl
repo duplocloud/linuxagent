@@ -24,7 +24,6 @@ build {
 		"sources.amazon-ebs.ubuntu-20",
 		"sources.amazon-ebs.ubuntu-22",
 		"sources.amazon-ebs.amazonlinux-2",
-		"sources.googlecompute.ubuntu-18",
 		"sources.googlecompute.ubuntu-20",
 		"sources.googlecompute.ubuntu-22"
 	]
@@ -45,7 +44,7 @@ build {
 		environment_vars = [ "DEBIAN_FRONTEND=noninteractive" ]
 		only   = [
 			"amazon-ebs.ubuntu-18", "amazon-ebs.ubuntu-20", "amazon-ebs.ubuntu-22",
-			"googlecompute.ubuntu-18", "googlecompute.ubuntu-20", "googlecompute.ubuntu-22"
+			"googlecompute.ubuntu-20", "googlecompute.ubuntu-22"
 		]
 	}
 
@@ -65,7 +64,7 @@ build {
 			"DOWNLOAD_REF=${var.agent_git_ref}",
 			"DEBIAN_FRONTEND=noninteractive"
 		]
-		only   = [ "amazon-ebs.ubuntu-18", "googlecompute.ubuntu-18" ]
+		only   = [ "amazon-ebs.ubuntu-18" ]
 	}
 
 	// Install - Ubuntu 20
@@ -103,7 +102,7 @@ build {
 		]
 		only   = [
 			"amazon-ebs.ubuntu-18", "amazon-ebs.ubuntu-20", "amazon-ebs.ubuntu-22",
-			"googlecompute.ubuntu-18", "googlecompute.ubuntu-20", "googlecompute.ubuntu-22"
+			"googlecompute.ubuntu-20", "googlecompute.ubuntu-22"
 		]
 	}
 

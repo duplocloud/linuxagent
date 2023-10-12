@@ -11,25 +11,6 @@ locals {
 	gcp_image_storage_locations = var.gcp_image_storage_locations
 }
 
-source "googlecompute" "ubuntu-18" {
-  project_id              = var.gcp_project_id
-	source_image_project_id = ["ubuntu-os-cloud"]
-  source_image_family     = "ubuntu-1804-lts"
-  ssh_username            = "ubuntu"
-  region                  = var.gcp_region
-  zone                    = var.gcp_zone
-	machine_type            = var.gcp_machine_type
-	disk_size               = var.default_disk_size
-	temporary_key_pair_type = var.temporary_key_pair_type
-
-	image_family      = "${local.image_family}-ubuntu18"
-	image_labels      = { os = "ubuntu18" }
-	image_name        = "${local.image_name}-ubuntu18"
-	image_description = "${local.image_description} (ubuntu18)"
-
-	image_storage_locations = local.gcp_image_storage_locations 
-}
-
 source "googlecompute" "ubuntu-20" {
   project_id              = var.gcp_project_id
 	source_image_project_id = ["ubuntu-os-cloud"]
