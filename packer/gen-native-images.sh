@@ -65,6 +65,8 @@ $nicename images:"
                 s/ca-central-1/CanadaCentral/g
                 s/us-gov-west-1/UsGovWest1/g
                 s/us-gov-east-1/UsGovEast1/g
+                s/ap-southeast-1/Singapore/g
+                s/ap-southeast-2/Sydney/g
             ')"
 
             case "$name" in

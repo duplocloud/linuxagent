@@ -24,7 +24,9 @@ locals {
       "ap-northeast-1",
       "ap-south-1",
       "sa-east-1",
-      "ca-central-1"
+      "ca-central-1",
+      "ap-southeast-1",
+      "ap-southeast-2"
     ]
 }
 
