@@ -119,7 +119,7 @@ installDependancies () {
     sudo yum install -q -y git wget curl net-tools vim
     sudo yum install -q -y yum-utils
 
-    sudo sed -i 's#-H fd://#-H fd:// -H tcp://0.0.0.0:4243#' /lib/systemd/system/docker.service
+    sudo sed -i 's#-H fd://#-H fd:// -H tcp://0.0.0.0:4243#' /usr/lib/systemd/system/docker.service
     sudo systemctl enable docker
     sudo systemctl start docker
     sudo systemctl status docker
