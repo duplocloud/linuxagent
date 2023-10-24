@@ -78,6 +78,20 @@ jobs:
             ONLY_BUILDERS="-only=$ONLY_BUILDERS"
           fi
 
+          # Validate the AWS settings in the target account
+          # Without this check, we have wasted hours building an AMI only for it to fail at the end due to the encryption settings.
+          # If this check fails the build - it means that your build would have failed or your AMI would have been unsharable.
+          #
+          for region in us-east-1 us-east-2 us-west-1 us-west-2 ca-central-1 eu-west-2 ap-northeast-1 ap-south-1
+          do
+            encryption_enabled="$(aws ec2 get-ebs-encryption-by-default --region=$region | jq -r .EbsEncryptionByDefault)"
+            if [ "$encryption_enabled" = "true" ]
+            then
+              echo "EBS Encryption by Default MUST NOT BE ENABLED - STOPPING BUILD" 1>&2
+              exit 1
+            fi
+          done
+
           # Build the images.
           rm -f packer-manifest.json # always be clean
           packer build $ONLY_BUILDERS \
@@ -149,6 +163,20 @@ jobs:
           elif [ -n "$ONLY_BUILDERS" ]; then
             ONLY_BUILDERS="-only=$ONLY_BUILDERS"
           fi
+
+          # Validate the AWS settings in the target account
+          # Without this check, we have wasted hours building an AMI only for it to fail at the end due to the encryption settings.
+          # If this check fails the build - it means that your build would have failed or your AMI would have been unsharable.
+          #
+          for region in us-gov-west-1 us-gov-east-1
+          do
+            encryption_enabled="$(aws ec2 get-ebs-encryption-by-default --region=$region | jq -r .EbsEncryptionByDefault)"
+            if [ "$encryption_enabled" = "true" ]
+            then
+              echo "EBS Encryption by Default MUST NOT BE ENABLED - STOPPING BUILD" 1>&2
+              exit 1
+            fi
+          done
 
           # Build the images.
           rm -f *packer-manifest.json # always be clean
