@@ -438,7 +438,7 @@ source "amazon-ebs" "amazonlinux-2-arm64" {
 }
 
 
-source "amazon-ebs" "amazonlinux-2" {
+source "amazon-ebs" "amazonlinux-2023" {
   ami_name                    = "${local.image_family}-al2023-${local.image_version}"
   ami_description             = "${local.image_description} (al2023)"
   instance_type               = var.aws_instance_type
@@ -496,7 +496,7 @@ source "amazon-ebs" "amazonlinux-2" {
   }
 }
 
-source "amazon-ebs" "amazonlinux-2-arm64" {
+source "amazon-ebs" "amazonlinux-2023-arm64" {
   ami_name                    = "${local.image_family}-al2023-arm64-${local.image_version}"
   ami_description             = "${local.image_description} arm64 (al2023)"
   instance_type               = var.aws_instance_type_arm64

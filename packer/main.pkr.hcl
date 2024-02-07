@@ -23,7 +23,12 @@ build {
 		"sources.amazon-ebs.ubuntu-18",
 		"sources.amazon-ebs.ubuntu-20",
 		"sources.amazon-ebs.ubuntu-22",
+		"sources.amazon-ebs.ubuntu-20-arm64",
+		"sources.amazon-ebs.ubuntu-22-arm64",
 		"sources.amazon-ebs.amazonlinux-2",
+		"sources.amazon-ebs.amazonlinux-2-arm64",
+		"sources.amazon-ebs.amazonlinux-2023",
+		"sources.amazon-ebs.amazonlinux-2023-arm64",
 		"sources.googlecompute.ubuntu-20",
 		"sources.googlecompute.ubuntu-22"
 	]
@@ -44,6 +49,7 @@ build {
 		environment_vars = [ "DEBIAN_FRONTEND=noninteractive" ]
 		only   = [
 			"amazon-ebs.ubuntu-18", "amazon-ebs.ubuntu-20", "amazon-ebs.ubuntu-22",
+			"amazon-ebs.ubuntu-20-arm64", "amazon-ebs.ubuntu-22-arm64",
 			"googlecompute.ubuntu-20", "googlecompute.ubuntu-22"
 		]
 	}
@@ -54,7 +60,10 @@ build {
 		environment_vars = [
 			"DOWNLOAD_REF=${var.agent_git_ref}"
 		]
-		only   = [ "amazon-ebs.amazonlinux-2" ]
+		only   = [
+			"amazon-ebs.amazonlinux-2", "amazon-ebs.amazonlinux-2023",
+			"amazon-ebs.amazonlinux-2-arm64", "amazon-ebs.amazonlinux-2023-arm64"
+		]
 	}
 
 	// Install - Ubuntu 18
@@ -74,7 +83,7 @@ build {
 			"DOWNLOAD_REF=${var.agent_git_ref}",
 			"DEBIAN_FRONTEND=noninteractive"
 		]
-		only   = [ "amazon-ebs.ubuntu-20", "googlecompute.ubuntu-20" ]
+		only   = [ "amazon-ebs.ubuntu-20", "amazon-ebs.ubuntu-20-arm64", "googlecompute.ubuntu-20" ]
 	}
 
 	// Install - Ubuntu 22
@@ -84,7 +93,7 @@ build {
 			"DOWNLOAD_REF=${var.agent_git_ref}",
 			"DEBIAN_FRONTEND=noninteractive"
 		]
-		only   = [ "amazon-ebs.ubuntu-22", "googlecompute.ubuntu-22" ]
+		only   = [ "amazon-ebs.ubuntu-22", "amazon-ebs.ubuntu-22-arm64", "googlecompute.ubuntu-22" ]
 	}
 
 	// Cleanup - Amazon Linux
@@ -92,7 +101,10 @@ build {
 		inline = [ 
 			"sudo rm -rf /home/ec2-user/.history /home/ec2-user/authorized_keys", // user history and SSH authorized keys
 		]
-		only   = [ "amazon-ebs.amazonlinux-2" ]
+		only   = [
+			"amazon-ebs.amazonlinux-2", "amazon-ebs.amazonlinux-2023",
+			"amazon-ebs.amazonlinux-2-arm64", "amazon-ebs.amazonlinux-2023-arm64"
+		]
 	}
 
 	// Cleanup - Ubuntu
@@ -102,6 +114,7 @@ build {
 		]
 		only   = [
 			"amazon-ebs.ubuntu-18", "amazon-ebs.ubuntu-20", "amazon-ebs.ubuntu-22",
+			"amazon-ebs.ubuntu-20-arm64", "amazon-ebs.ubuntu-22-arm64",
 			"googlecompute.ubuntu-20", "googlecompute.ubuntu-22"
 		]
 	}
