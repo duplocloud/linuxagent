@@ -159,7 +159,7 @@ jobs:
 
           # Parse build options.
           if [ "$ONLY_BUILDERS" = "all" ]; then
-            ONLY_BUILDERS="-only=amazon-ebs.ubuntu-20,amazon-ebs.ubuntu-22,amazon-ebs.amazonlinux-2"
+            ONLY_BUILDERS="-except=amazon-ebs.ubuntu-18,googlecompute.ubuntu-20,googlecompute.ubuntu-22"
           elif [ -n "$ONLY_BUILDERS" ]; then
             ONLY_BUILDERS="-only=$ONLY_BUILDERS"
           fi
@@ -204,6 +204,7 @@ jobs:
     if: "${{ startsWith(github.event.inputs.image_version, 'release-') && github.event.inputs.only_partition == 'all' }}"
     needs:
       - build-commercial
+      - build-govcloud
     steps:
       # Get the code for the image JSON generation, and the code for Duplo master.
       - name: Checkout duplo-infra

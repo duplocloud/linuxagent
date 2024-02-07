@@ -38,6 +38,10 @@ do
             s/ubuntu-/Ubuntu/g
         ')"
 
+        arch="amd64"
+        [ "${name/arm64/}" != $name ] && arch="arm64"
+        nicename="${nicename/-arm64/ (arm64)}"
+
         echo "
 $nicename images:"
         artifacts="$(
@@ -87,7 +91,8 @@ $nicename images:"
     \"ImageId\": \"${image}\",
     \"Region\": \"${region}\",
     \"Username\": \"${user}\",
-    \"Agent\": 0
+    \"Agent\": 0,
+    \"Arch\": \"${arch}\"
   }"    
         done
     done
@@ -95,7 +100,8 @@ done
 
 echo "[$json
 ]" >snippet-temp.json
-jq '. | map(select(.Name == "Docker-Duplo-Oregon-Ubuntu22") | .Name = "Docker-Duplo") + .' <snippet-temp.json >snippet-NativeImages.json
+jq '. | map(select(.Name == "Docker-Duplo-Oregon-Ubuntu22" and .Arch == "amd64") | .Name = "Docker-Duplo") + .' <snippet-temp.json >snippet-temp2.json
+jq '. | map(select(.Name == "Docker-Duplo-Oregon-Ubuntu22 (arm64)" and .Arch == "arm64") | .Name = "Docker-Duplo (arm64)") + .' <snippet-temp2.json >snippet-NativeImages.json
 out "NativeImages JSON: snippet done"
 
 # Step 2 - Build a new native images JSON
