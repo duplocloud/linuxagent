@@ -38,6 +38,9 @@ do
             s/ubuntu-/Ubuntu/g
         ')"
 
+        arch="amd64"
+        [ "${name/arm64/}" != "arm64" ] && arch="arm64"
+
         echo "
 $nicename images:"
         artifacts="$(
@@ -87,7 +90,8 @@ $nicename images:"
     \"ImageId\": \"${image}\",
     \"Region\": \"${region}\",
     \"Username\": \"${user}\",
-    \"Agent\": 0
+    \"Agent\": 0,
+    \"Arch\": \"${arch}\"
   }"    
         done
     done
