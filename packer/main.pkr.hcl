@@ -27,8 +27,8 @@ build {
 		"sources.amazon-ebs.ubuntu-22-arm64",
 		"sources.amazon-ebs.amazonlinux-2",
 		"sources.amazon-ebs.amazonlinux-2-arm64",
-		"sources.amazon-ebs.amazonlinux-2023",
-		"sources.amazon-ebs.amazonlinux-2023-arm64",
+//		"sources.amazon-ebs.amazonlinux-2023",
+//		"sources.amazon-ebs.amazonlinux-2023-arm64",
 		"sources.googlecompute.ubuntu-20",
 		"sources.googlecompute.ubuntu-22"
 	]
@@ -61,8 +61,8 @@ build {
 			"DOWNLOAD_REF=${var.agent_git_ref}"
 		]
 		only   = [
-			"amazon-ebs.amazonlinux-2", "amazon-ebs.amazonlinux-2023",
-			"amazon-ebs.amazonlinux-2-arm64", "amazon-ebs.amazonlinux-2023-arm64"
+			"amazon-ebs.amazonlinux-2", "amazon-ebs.amazonlinux-2-arm64",
+			// "amazon-ebs.amazonlinux-2023", "amazon-ebs.amazonlinux-2023-arm64"
 		]
 	}
 
@@ -102,8 +102,8 @@ build {
 			"sudo rm -rf /home/ec2-user/.history /home/ec2-user/authorized_keys", // user history and SSH authorized keys
 		]
 		only   = [
-			"amazon-ebs.amazonlinux-2", "amazon-ebs.amazonlinux-2023",
-			"amazon-ebs.amazonlinux-2-arm64", "amazon-ebs.amazonlinux-2023-arm64"
+			"amazon-ebs.amazonlinux-2", "amazon-ebs.amazonlinux-2-arm64",
+			// "amazon-ebs.amazonlinux-2023", "amazon-ebs.amazonlinux-2023-arm64"
 		]
 	}
 
