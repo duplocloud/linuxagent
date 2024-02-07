@@ -204,6 +204,7 @@ jobs:
     if: "${{ startsWith(github.event.inputs.image_version, 'release-') && github.event.inputs.only_partition == 'all' }}"
     needs:
       - build-commercial
+      - build-govcloud
     steps:
       # Get the code for the image JSON generation, and the code for Duplo master.
       - name: Checkout duplo-infra
