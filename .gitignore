@@ -1,5 +1,6 @@
 # Ignore packer manifest
 packer-manifest.json
+govcloud-packer-manifest.json
 snippet-*.json
 *.pkrvars.json
 
