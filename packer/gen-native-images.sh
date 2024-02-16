@@ -71,6 +71,7 @@ $nicename images:"
                 s/us-gov-east-1/UsGovEast1/g
                 s/ap-southeast-1/Singapore/g
                 s/ap-southeast-2/Sydney/g
+                s/me-central-1/UAE/g
             ')"
 
             case "$name" in

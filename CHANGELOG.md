@@ -1,3 +1,8 @@
+## 2024-02-16
+
+### Added
+- Enabled support for the "me-central-1" AWS region in the Packer configuration, allowing the creation of AMIs in the Middle East (Bahrain) region.
+
 ## 2024-02-07
 
 ### Added
