@@ -84,7 +84,7 @@ ubuntuInstall () {
 }
 
 
-installDependancies () {
+installDependencies () {
 
   if [ "$OS" = "centos" ]; then
     echo "Centos Installing docker"
@@ -115,6 +115,8 @@ installDependancies () {
     sudo amazon-linux-extras install -q -y docker
     sudo yum install -q -y docker
     sudo usermod -a -G docker ec2-user
+    sudo yum install -q -y amazon-ecr-credential-helper
+    mkdir -p ~/.docker && echo '{ "credsStore": "ecr-login" }' > ~/.docker/config.json
 
     sudo yum install -q -y git wget curl net-tools vim
     sudo yum install -q -y yum-utils
@@ -139,6 +141,8 @@ installDependancies () {
     echo "Ubuntu Installing Container Management Service"
     sudo apt-get  update
     sudo apt install -q -y  python3-dev python3-pip bridge-utils  python3-virtualenv gcc
+    sudo apt install -q -y amazon-ecr-credential-helper
+    mkdir -p ~/.docker && echo '{ "credsStore": "ecr-login" }' > ~/.docker/config.json
     ###
     options=`cat /etc/default/docker | grep bridge`
     echo $options
@@ -197,7 +201,7 @@ echo "Step 1: Install Docker and setup docker bridge";
 echo "--------------------------OS=$OS VER=$VER-------------------------------------1"
 echo; echo;
 
-installDependancies
+installDependencies
 
 
 

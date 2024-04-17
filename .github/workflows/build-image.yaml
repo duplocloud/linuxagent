@@ -42,7 +42,7 @@ jobs:
 
       # AWS credentials
       - name: Packer AWS Role
-        uses: aws-actions/configure-aws-credentials@v3
+        uses: aws-actions/configure-aws-credentials@v4
         with:
           aws-access-key-id: ${{ env.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ env.AWS_SECRET_ACCESS_KEY }}
@@ -105,7 +105,7 @@ jobs:
       
       # Upload the image manifest
       - name: Attach Manifest
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: packer-manifest.json
           path: packer-manifest.json
@@ -117,7 +117,7 @@ jobs:
       duplo_token: "${{ secrets.GOVCLOUD_DUPLO_TOKEN }}"
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       # AWS credentials
       - name: Tenant AWS JIT
@@ -127,7 +127,7 @@ jobs:
 
       # AWS credentials
       - name: Packer AWS Role
-        uses: aws-actions/configure-aws-credentials@v2
+        uses: aws-actions/configure-aws-credentials@v4
         with:
           aws-access-key-id: ${{ env.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ env.AWS_SECRET_ACCESS_KEY }}
