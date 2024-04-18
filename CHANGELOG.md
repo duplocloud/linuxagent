@@ -1,3 +1,12 @@
+## 2024-04-18
+
+### Added
+- Installed `amazon-ecr-credential-helper` and configured Docker to use it across Ubuntu 20, Ubuntu 22, and AmazonLinux2 setups.
+
+### Changed
+- Corrected function name typo from `installDependancies` to `installDependencies` in setup scripts.
+- Updated GitHub Actions in the workflow file to use newer versions (v4) for better performance and features.
+
 ## 2024-02-16
 
 ### Added
