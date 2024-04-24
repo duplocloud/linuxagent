@@ -80,6 +80,7 @@ centosInstall () {
 ubuntuInstall () {
    echo "Performing Ubuntu Install "
    py3Install
+   service docker restart
 }
 
 
