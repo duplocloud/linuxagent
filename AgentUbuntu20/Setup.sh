@@ -112,7 +112,7 @@ installDependancies () {
     curl -sSL https://get.docker.com/ | sudo sh
     echo "Ubuntu Installing Container Management Service"
     sudo apt-get  update
-    sudo apt install -q -y  python3-dev python3-pip bridge-utils  python3-virtualenv gcc
+    sudo apt install -q -y --fix-missing  python3-dev python3-pip bridge-utils  python3-virtualenv gcc
     ###
     options=`cat /etc/default/docker | grep bridge`
     echo $options
