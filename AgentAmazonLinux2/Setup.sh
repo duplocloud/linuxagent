@@ -43,12 +43,12 @@ py3Install () {
 
   # install virtualenv flask
   virtualenv flask
-  yes | flask/bin/pip install flask
-  yes | flask/bin/pip install requests
-  yes | flask/bin/pip install python-pytun
-  yes | flask/bin/pip install --upgrade python-iptables
-  yes | flask/bin/pip install docker
-  yes | flask/bin/pip install boto3
+  yes | flask/bin/pip --trusted-host pypi.python.org install flask
+  yes | flask/bin/pip --trusted-host pypi.python.org install requests
+  yes | flask/bin/pip --trusted-host pypi.python.org install python-pytun
+  yes | flask/bin/pip --trusted-host pypi.python.org install --upgrade python-iptables
+  yes | flask/bin/pip --trusted-host pypi.python.org install docker
+  yes | flask/bin/pip --trusted-host pypi.python.org install boto3
 
    #########
    cd $DAEMON_DIR
