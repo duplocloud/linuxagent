@@ -1,3 +1,8 @@
+## 2024-08-13
+
+### Changed
+- Added `--trusted-host pypi.python.org` parameter to all `pip install` commands in the Amazon Linux 2 setup script for improved consistency and reliability.
+
 ## 2024-04-18
 
 ### Added
