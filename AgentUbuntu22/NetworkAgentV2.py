@@ -11,7 +11,6 @@ import pdb
 import json
 import argparse
 import logging
-import iptc
 import sys
 import traceback
 import os
@@ -149,45 +148,6 @@ def updateTunnels(aInRemoteMinions, aInLocalMinion):
     logger.debug('End Reconciling Tunnels ======================================================')
 
     return
-
-def addNetfilter(aInChain, aInRule, aInBlock):
-    rule = iptc.Rule()
-    match = rule.create_match("comment")
-    match.comment = aInRule['Name']
-
-    rule.dst = aInRule['DestAddress']
-
-    if aInRule['SrcAddress']:
-        rule.src = aInRule['SrcAddress']
-    if aInRule['Protocol']:
-        rule.protocol = aInRule['Protocol']
-    if aInRule['BeginPort']:
-        match = iptc.Match(rule, aInRule['Protocol'])
-        match.dport = aInRule['BeginPort'] + ":" + aInRule['EndPort']
-        rule.add_match(match)
-
-    if aInBlock:
-        rule.target = rule.create_target("DROP")
-        aInChain.append_rule(rule)
-    else:
-        rule.target = rule.create_target("ACCEPT")
-        aInChain.insert_rule(rule)
-
-def deleteNetfilter(aInRuleName):
-    table = iptc.Table(iptc.Table.FILTER)
-
-    for chain in table.chains:
-        if not str(chain.name) == 'FORWARD':
-            continue
-        for rule in chain.rules:
-            for match in rule.matches:
-                if str(match.name) == 'comment':
-                    lRName = str(match.comment)
-                    if lRName == aInRuleName:
-                        logger.debug('DELETING RULE: ' + lRName)
-                        chain.delete_rule(rule)
-                        break
-        break
 
 def updateTopology():
     global TenantID
