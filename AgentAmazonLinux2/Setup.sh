@@ -11,6 +11,9 @@ PYTHON_PATH="$DAEMON_DIR/flask/bin"
 DAEMON="$DAEMON_DIR/NetworkAgentV2.py"
 DOWNLOAD_URL="https://api.github.com/repos/duplocloud/linuxagent/contents/AgentAmazonLinux2"
 
+DOCKER_OVERRIDE_DIR="/etc/systemd/system/docker.service.d"
+DOCKER_OVERRIDE_FILE="$DOCKER_OVERRIDE_DIR/api.conf"
+
 if [ -z "${DOWNLOAD_REF:-}" ]
 then DOWNLOAD_REF=''
 else DOWNLOAD_REF="?ref=${DOWNLOAD_REF}"
@@ -121,7 +124,18 @@ installDependencies () {
     sudo yum install -q -y git wget curl net-tools vim
     sudo yum install -q -y yum-utils
 
-    sudo sed -i 's#-H fd://#-H fd:// -H tcp://0.0.0.0:4243#' /usr/lib/systemd/system/docker.service
+    # Ensure directory exists
+    sudo mkdir -p "$DOCKER_OVERRIDE_DIR"
+
+    # Create or overwrite the override file
+    sudo tee "$DOCKER_OVERRIDE_FILE" > /dev/null <<EOF
+[Service]
+ExecStart=
+ExecStart=/usr/bin/dockerd -H fd:// -H tcp://0.0.0.0:4243 --containerd=/run/containerd/containerd.sock $OPTIONS $DOCKER_STORAGE_OPTIONS $DOCKER_ADD_RUNTIMES
+EOF
+
+    sudo systemctl daemon-reexec
+    sudo systemctl daemon-reload
     sudo systemctl enable docker
     sudo systemctl start docker
     sudo systemctl status docker
