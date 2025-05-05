@@ -75,17 +75,26 @@ elif  [ "$OS" = "Ubuntu" ]; then
   sudo apt-get -q -y install python-pip
   sudo apt-get -q -y install python-virtualenv
 
-  ###
-  options=`cat /etc/default/docker | grep bridge`
-  echo $options
-
-  if [ -z "$options" ]; then
-     sudo sed -i 's#-H fd://#-H fd:// -H tcp://0.0.0.0:4243#' /lib/systemd/system/docker.service
-  fi
-
 else
     echo "Uknown OS=$OS VER=$VER "
 fi
+
+# Ensure directory exists
+sudo mkdir -p "$DOCKER_OVERRIDE_DIR"
+# Create or overwrite the override file
+sudo tee "$DOCKER_OVERRIDE_FILE" > /dev/null <<EOF
+[Service]
+ExecStart=
+ExecStart=/usr/bin/dockerd -H fd:// -H tcp://0.0.0.0:4243 --containerd=/run/containerd/containerd.sock
+EOF
+
+sudo systemctl daemon-reexec
+sudo systemctl daemon-reload
+sudo systemctl enable docker
+sudo systemctl restart docker
+sudo systemctl status docker
+sudo docker ps
+sudo docker info
 
 #if [ -z "$options" ]; then
 #    sudo bash -c 'echo DOCKER_OPTS=\"-H tcp://0.0.0.0:4243 -H unix:///var/run/docker.sock -b=bridge0\" >> /etc/default/docker'

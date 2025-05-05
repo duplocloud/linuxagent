@@ -97,13 +97,6 @@ installDependencies () {
     sudo yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo
     sudo yum install -q -y docker-ce docker-ce-cli containerd.io
 
-    sudo sed -i 's#-H fd://#-H fd:// -H tcp://0.0.0.0:4243#' /lib/systemd/system/docker.service
-    sudo systemctl enable docker
-    sudo systemctl start docker
-    sudo systemctl status docker
-    sudo docker ps
-    sudo docker info
-
     echo "Centos Installing Container Management Service"
     sudo yum   update  -q -y
     sudo yum  -q -y install bridge-utils
@@ -124,24 +117,6 @@ installDependencies () {
     sudo yum install -q -y git wget curl net-tools vim
     sudo yum install -q -y yum-utils
 
-    # Ensure directory exists
-    sudo mkdir -p "$DOCKER_OVERRIDE_DIR"
-
-    # Create or overwrite the override file
-    sudo tee "$DOCKER_OVERRIDE_FILE" > /dev/null <<EOF
-[Service]
-ExecStart=
-ExecStart=/usr/bin/dockerd -H fd:// -H tcp://0.0.0.0:4243 --containerd=/run/containerd/containerd.sock $OPTIONS $DOCKER_STORAGE_OPTIONS $DOCKER_ADD_RUNTIMES
-EOF
-
-    sudo systemctl daemon-reexec
-    sudo systemctl daemon-reload
-    sudo systemctl enable docker
-    sudo systemctl start docker
-    sudo systemctl status docker
-    sudo docker ps
-    sudo docker info
-
     echo "amzn Amazon Linux 2 Installing Container Management Service"
     sudo yum   update   -q -y
     sudo yum  -q -y install bridge-utils
@@ -158,15 +133,26 @@ EOF
     sudo apt install -q -y amazon-ecr-credential-helper
     mkdir -p ~/.docker && echo '{ "credsStore": "ecr-login" }' > ~/.docker/config.json
     ###
-    options=`cat /etc/default/docker | grep bridge`
-    echo $options
-    if [ -z "$options" ]; then
-       sudo sed -i 's#-H fd://#-H fd:// -H tcp://0.0.0.0:4243#' /lib/systemd/system/docker.service
-    fi
   else
       echo "Unknown OS=$OS VER=$VER "
   fi
 
+  # Ensure directory exists
+  sudo mkdir -p "$DOCKER_OVERRIDE_DIR"
+  # Create or overwrite the override file
+  sudo tee "$DOCKER_OVERRIDE_FILE" > /dev/null <<EOF
+[Service]
+ExecStart=
+ExecStart=/usr/bin/dockerd -H fd:// -H tcp://0.0.0.0:4243 --containerd=/run/containerd/containerd.sock
+EOF
+
+  sudo systemctl daemon-reexec
+  sudo systemctl daemon-reload
+  sudo systemctl enable docker
+  sudo systemctl restart docker
+  sudo systemctl status docker
+  sudo docker ps
+  sudo docker info
 
 }
 

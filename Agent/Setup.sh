@@ -20,12 +20,22 @@ fi
 #
 curl -sSL https://get.docker.com/ | sudo sh 
 
-options=`cat /etc/default/docker | grep bridge`
-echo $options 
+# Ensure directory exists
+sudo mkdir -p "$DOCKER_OVERRIDE_DIR"
+# Create or overwrite the override file
+sudo tee "$DOCKER_OVERRIDE_FILE" > /dev/null <<EOF
+[Service]
+ExecStart=
+ExecStart=/usr/bin/dockerd -H fd:// -H tcp://0.0.0.0:4243 --containerd=/run/containerd/containerd.sock
+EOF
 
-if [ -z "$options" ]; then
-   sudo sed -i 's#-H fd://#-H fd:// -H tcp://0.0.0.0:4243#' /lib/systemd/system/docker.service
-fi
+sudo systemctl daemon-reexec
+sudo systemctl daemon-reload
+sudo systemctl enable docker
+sudo systemctl restart docker
+sudo systemctl status docker
+sudo docker ps
+sudo docker info
 
 #if [ -z "$options" ]; then
 #    sudo bash -c 'echo DOCKER_OPTS=\"-H tcp://0.0.0.0:4243 -H unix:///var/run/docker.sock -b=bridge0\" >> /etc/default/docker'
