@@ -32,64 +32,6 @@ locals {
     ]
 }
 
-source "amazon-ebs" "ubuntu-18" {
-  ami_name                    = "${local.image_family}-ubuntu18-${local.image_version}"
-  ami_description             = "${local.image_description} (ubuntu18)"
-  instance_type               = var.aws_instance_type
-  region                      = var.aws_region
-  vpc_id                      = var.aws_vpc_id
-  subnet_id                   = var.aws_subnet_id
-  security_group_id           = var.aws_security_group_id
-  iam_instance_profile        = var.aws_iam_instance_profile
-  associate_public_ip_address = true
-
-	temporary_key_pair_type = var.temporary_key_pair_type
-	ssh_username            = "ubuntu"
-  ssh_interface           = "session_manager"
-
-  source_ami_filter {
-    filters = {
-      name                = "ubuntu/images/hvm-ssd/ubuntu-bionic-18.04-amd64-server-*"
-      root-device-type    = "ebs"
-      virtualization-type = "hvm"
-    }
-    most_recent = true
-    owners      = local.ubuntu_owners
-  }
-
-  # Build a public AMI
-  encrypt_boot = false
-  ami_groups   = local.is_public ? ["all"] : []
-  ami_regions  = [for region in local.ami_regions: region if region != var.aws_region]
-
-  # Customize the volumes
-  launch_block_device_mappings {
-    device_name = "/dev/sda1"
-    encrypted   = false
-    volume_size = 35
-    volume_type = "gp3"
-    delete_on_termination = true
-  }
-
-  # Source instance tags.
-  run_tags = {
-    Name    = "Packer Builder: ${local.image_family}-ubuntu18-${local.image_version}"
-    Creator = "Packer"
-  }
-  run_volume_tags = {
-    Creator = "Packer"
-  }
-
-  # Target AMI tags.
-  tags = {
-    Name    = "${local.image_family}-ubuntu18-${local.image_version}"
-    Creator = "Packer"
-  }
-  snapshot_tags = {
-    Creator = "Packer"
-  }
-}
-
 source "amazon-ebs" "ubuntu-20" {
   ami_name                    = "${local.image_family}-ubuntu20-${local.image_version}"
   ami_description             = "${local.image_description} (ubuntu20)"

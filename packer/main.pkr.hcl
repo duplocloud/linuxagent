@@ -20,7 +20,6 @@ locals {
 
 build {
   sources = [
-		"sources.amazon-ebs.ubuntu-18",
 		"sources.amazon-ebs.ubuntu-20",
 		"sources.amazon-ebs.ubuntu-22",
 		"sources.amazon-ebs.ubuntu-20-arm64",
@@ -48,7 +47,7 @@ build {
 		]
 		environment_vars = [ "DEBIAN_FRONTEND=noninteractive" ]
 		only   = [
-			"amazon-ebs.ubuntu-18", "amazon-ebs.ubuntu-20", "amazon-ebs.ubuntu-22",
+			"amazon-ebs.ubuntu-20", "amazon-ebs.ubuntu-22",
 			"amazon-ebs.ubuntu-20-arm64", "amazon-ebs.ubuntu-22-arm64",
 			"googlecompute.ubuntu-20", "googlecompute.ubuntu-22"
 		]
@@ -64,16 +63,6 @@ build {
 			"amazon-ebs.amazonlinux-2", "amazon-ebs.amazonlinux-2-arm64",
 			// "amazon-ebs.amazonlinux-2023", "amazon-ebs.amazonlinux-2023-arm64"
 		]
-	}
-
-	// Install - Ubuntu 18
-	provisioner "shell" {
-		script = "${path.root}/../Agent/Setup_16.04.sh"
-		environment_vars = [
-			"DOWNLOAD_REF=${var.agent_git_ref}",
-			"DEBIAN_FRONTEND=noninteractive"
-		]
-		only   = [ "amazon-ebs.ubuntu-18" ]
 	}
 
 	// Install - Ubuntu 20
@@ -113,7 +102,7 @@ build {
 			"sudo rm -rf /home/ubuntu/.history /home/ubuntu/authorized_keys", // user history and SSH authorized keys
 		]
 		only   = [
-			"amazon-ebs.ubuntu-18", "amazon-ebs.ubuntu-20", "amazon-ebs.ubuntu-22",
+			"amazon-ebs.ubuntu-20", "amazon-ebs.ubuntu-22",
 			"amazon-ebs.ubuntu-20-arm64", "amazon-ebs.ubuntu-22-arm64",
 			"googlecompute.ubuntu-20", "googlecompute.ubuntu-22"
 		]
