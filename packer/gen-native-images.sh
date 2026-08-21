@@ -4,25 +4,24 @@
 #
 
 # Utility functions.
-out() { echo "$0:" "$@" ; }
-err() { echo "$0:" "$@" 1>&2 ; }
-die() { err "$@" ; exit 1 ; }
+out() { echo "$0:" "$@" ; return 0 ; }
+err() { echo "$0:" "$@" 1>&2 ; return 0 ; }
 
 # Sanity checks.
 if file "${BASH_SOURCE[0]}" | grep -q CRLF
-then die 'STOP!
+then err 'STOP!
 
 Your Windows system has converted LF to CRLF.  The script will not function properly.
 
 Please re-checkout the files after running:
   git config core.autocrlf false
-'
+' ; exit 1
 fi
 if ! command -v jq >/dev/null 2>&1
-then die "JQ must be installed"
+then err "JQ must be installed" ; exit 1
 fi
-if ! [ "$(git config core.autocrlf)" == "false" ]
-then die "git config core.autocrlf must be set to 'false' for this repo"
+if [[ "$(git config core.autocrlf)" != "false" ]]
+then err "git config core.autocrlf must be set to 'false' for this repo" ; exit 1
 fi
 
 # Step 1 - Get all image IDs from packer and use them to generate a JSON snippet
@@ -39,7 +38,7 @@ do
         ')"
 
         arch="amd64"
-        [ "${name/arm64/}" != $name ] && arch="arm64"
+        [[ "${name/arm64/}" != "$name" ]] && arch="arm64"
         nicename="${nicename/-arm64/ (arm64)}"
 
         echo "
@@ -81,11 +80,16 @@ $nicename images:"
             ubuntu*)
                 user=ubuntu
                 ;;
+            *)
+                # Without this the previous iteration's $user would silently carry over.
+                err "no SSH username mapping for builder name '$name'"
+                exit 1
+                ;;
             esac
 
             echo "$niceregion" "$image"
 
-            [ -n "$json" ] && json="${json},"
+            [[ -n "$json" ]] && json="${json},"
             json="${json}
   {
     \"Name\": \"Docker-Duplo-${niceregion}-${nicename}\",
@@ -110,12 +114,19 @@ out "NativeImages JSON: snippet done"
 snippet="$(pwd -P)/snippet-NativeImages.json"
 (cd "$DUPLO_SOURCE" &&
 
-    # Join the default Duplo docker image ...
-    # ... with the remaining Duplo docker images
-    # ... and then all other images
-    jq 'input + (. | map(select(.Name | startswith("Docker-Duplo") | not)))' \
+    # Merge by Name so a scoped Packer build (for example only_builders=AL2023) only replaces the rows it
+    # rebuilt. The previous join dropped every "Docker-Duplo*" row, wiping AL2 / Ubuntu / GovCloud entries.
+    # IN($newNames[]) rather than `$newNames | index(.Name)`, since piping into index rebinds `.` and would
+    # read .Name off the array itself.
+    jq 'input as $snippet
+        | ($snippet | map(.Name)) as $newNames
+        | $snippet
+          + (. | map(select(
+              ((.Name | startswith("Docker-Duplo")) | not)
+              or ((.Name | IN($newNames[])) | not)
+            )))' \
         config/V1/BuiltInNativeImages.json  "$snippet" > temp.json &&
-    
+
     # Replace the existing JSON
     mv temp.json config/V1/BuiltInNativeImages.json
 )

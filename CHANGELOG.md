@@ -1,3 +1,18 @@
+## 2026-08-19
+
+### Added
+- Enabled the Amazon Linux 2023 x86_64 and arm64 Packer builders, along with `AgentAmazonLinux2023/Setup.sh` and a README for it. These sources were added commented-out in 2024-02, so the Amazon Linux 2023 builders claimed by the 2024-02-07 entry below have never run until now.
+- Pinned the Amazon Linux 2023 `source_ami_filter` to `al2023-ami-2023.*`, which excludes the ECS-optimized and minimal AMI variants that the looser `al2023-ami-*` pattern also matches.
+- Added a per-builder SSH username check to `gen-native-images.sh`. An unmapped builder name previously reused the previous row's username instead of failing.
+
+### Changed
+- Merged the generated native-image rows by `Name` instead of replacing every `Docker-Duplo*` row. A build scoped with `only_builders` now leaves the Amazon Linux 2, Ubuntu, and GovCloud rows intact.
+- Pinned all third-party GitHub Actions to commit SHAs, and bumped `actions/checkout` to v7, `actions/upload-artifact` to v7, and `actions/download-artifact` to v8.
+- Switched the commercial `Packer AWS Role` step to OIDC alone, dropping the static credential inputs that were resolving to empty strings.
+- Skipped the GCP credential step unless `only_builders` names a `googlecompute` builder. It had been authenticating on the `all` path, which excludes those builders.
+- Treated an empty `only_builders` the same as `all`. A cleared input previously reached packer with no filter, building every source including the GCP ones.
+- Added `amazon-ebs.amazonlinux-2-arm64` to the Amazon Linux OS-update step, which had listed only the x86_64 builder.
+
 ## 2024-08-13
 
 ### Changed

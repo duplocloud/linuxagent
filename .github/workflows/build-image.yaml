@@ -31,22 +31,20 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
-      # GCP credentials
+      # GCP credentials - only when a GCP builder is in scope
       - name: Packer GCP Service Account
-        uses: google-github-actions/auth@v2
+        if: contains(github.event.inputs.only_builders, 'googlecompute')
+        uses: google-github-actions/auth@7c6bc770dae815cd3e89ee6cdf493a5fab2cc093 # v3.0.0
         with:
           workload_identity_provider: 'projects/17033121890/locations/global/workloadIdentityPools/duplo-githubactions/providers/duplo-githubactions'
           service_account: 'packer@msp-duplocloud-01.iam.gserviceaccount.com'
 
       # AWS credentials
       - name: Packer AWS Role
-        uses: aws-actions/configure-aws-credentials@v4
+        uses: aws-actions/configure-aws-credentials@e6de054238d6b7531b4efff3b6587d9aade6a06c # v6.2.3
         with:
-          aws-access-key-id: ${{ env.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ env.AWS_SECRET_ACCESS_KEY }}
-          aws-session-token: ${{ env.AWS_SESSION_TOKEN }}
           aws-region: us-west-2
           role-to-assume: arn:aws:iam::227120241369:role/packer-builder
           role-session-name: github-duplocloud-linuxagent
@@ -71,10 +69,10 @@ jobs:
           # Validate the template.
           packer validate -syntax-only ./packer
 
-          # Parse build options.
-          if [ "$ONLY_BUILDERS" = "all" ]; then
+          # Parse build options. An empty input would otherwise reach packer unfiltered and build the GCP sources too.
+          if [ -z "$ONLY_BUILDERS" ] || [ "$ONLY_BUILDERS" = "all" ]; then
             ONLY_BUILDERS="-except=googlecompute.ubuntu-20,googlecompute.ubuntu-22"
-          elif [ -n "$ONLY_BUILDERS" ]; then
+          else
             ONLY_BUILDERS="-only=$ONLY_BUILDERS"
           fi
 
@@ -105,7 +103,7 @@ jobs:
       
       # Upload the image manifest
       - name: Attach Manifest
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: packer-manifest.json
           path: packer-manifest.json
@@ -117,17 +115,17 @@ jobs:
       duplo_token: "${{ secrets.GOVCLOUD_DUPLO_TOKEN }}"
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       # AWS credentials
       - name: Tenant AWS JIT
-        uses: duplocloud/ghactions-aws-jit@master
+        uses: duplocloud/ghactions-aws-jit@8add5087285847c4f96923be523cee313aa4009d # master, newer than the v0.3.3 tag
         with:
           tenant: github
 
       # AWS credentials
       - name: Packer AWS Role
-        uses: aws-actions/configure-aws-credentials@v4
+        uses: aws-actions/configure-aws-credentials@e6de054238d6b7531b4efff3b6587d9aade6a06c # v6.2.3
         with:
           aws-access-key-id: ${{ env.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ env.AWS_SECRET_ACCESS_KEY }}
@@ -157,10 +155,10 @@ jobs:
           # Validate the template.
           packer validate -syntax-only ./packer
 
-          # Parse build options.
-          if [ "$ONLY_BUILDERS" = "all" ]; then
+          # Parse build options. An empty input would otherwise reach packer unfiltered and build the GCP sources too.
+          if [ -z "$ONLY_BUILDERS" ] || [ "$ONLY_BUILDERS" = "all" ]; then
             ONLY_BUILDERS="-except=googlecompute.ubuntu-20,googlecompute.ubuntu-22"
-          elif [ -n "$ONLY_BUILDERS" ]; then
+          else
             ONLY_BUILDERS="-only=$ONLY_BUILDERS"
           fi
 
@@ -179,7 +177,7 @@ jobs:
           done
 
           # Build the images.
-          rm -f *packer-manifest.json # always be clean
+          rm -f ./*packer-manifest.json # always be clean
           packer build $ONLY_BUILDERS \
             -color=false -on-error=cleanup -parallel-builds=10 -timestamp-ui \
             -var-file=packer/duplo-gov.json \
@@ -193,7 +191,7 @@ jobs:
       
       # Upload the image manifest
       - name: Attach Manifest
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: govcloud-packer-manifest.json
           path: govcloud-packer-manifest.json
@@ -208,9 +206,9 @@ jobs:
     steps:
       # Get the code for the image JSON generation, and the code for Duplo master.
       - name: Checkout duplo-infra
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
       - name: Checkout duplo (backend)
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           repository: duplocloud-internal/duplo
           ref: master                 # always start from master
@@ -219,12 +217,12 @@ jobs:
       
       # Download the image manifest
       - name: Download Manifest (Commercial)
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: packer-manifest.json
           path: packer
       - name: Download Manifest (Govcloud)
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: govcloud-packer-manifest.json
           path: packer
@@ -238,7 +236,7 @@ jobs:
       
       # Create a PR
       - name: Create Pull Request
-        uses: peter-evans/create-pull-request@v4
+        uses: peter-evans/create-pull-request@5f6978faf089d4d20b00c7766989d076bb2fc7f1 # v8.1.1
         with:
           title: '[duplo-bot] Update Duplo Docker AMI(s)'
           branch: auto-update/duplo-docker-amis

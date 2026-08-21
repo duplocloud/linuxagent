@@ -6,11 +6,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v7
 
       # Validate templates
       - name: Validate Template
-        uses: hashicorp/packer-github-actions@master
+        # Last commit of the command-based action. v2+ is a different, setup-only action with no command/target inputs.
+        uses: hashicorp/packer-github-actions@8c999b2ff7c48cce2adc5fe43ad7fd8a80e6a8b5 # master
         with:
           command: validate
           arguments: -syntax-only
