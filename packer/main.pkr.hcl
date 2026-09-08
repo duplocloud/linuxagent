@@ -26,16 +26,21 @@ build {
 		"sources.amazon-ebs.ubuntu-22-arm64",
 		"sources.amazon-ebs.amazonlinux-2",
 		"sources.amazon-ebs.amazonlinux-2-arm64",
-//		"sources.amazon-ebs.amazonlinux-2023",
-//		"sources.amazon-ebs.amazonlinux-2023-arm64",
+		"sources.amazon-ebs.amazonlinux-2023",
+		"sources.amazon-ebs.amazonlinux-2023-arm64",
 		"sources.googlecompute.ubuntu-20",
 		"sources.googlecompute.ubuntu-22"
 	]
 
-	// OS updates - Amazon Linux
+	// OS updates - Amazon Linux (yum on AL2023 is a wrapper for dnf)
 	provisioner "shell" {
 		inline = [ "sleep 10", "sudo yum update -y" ]
-		only   = [ "amazon-ebs.amazonlinux-2" ]
+		only   = [
+			"amazon-ebs.amazonlinux-2",
+			"amazon-ebs.amazonlinux-2-arm64",
+			"amazon-ebs.amazonlinux-2023",
+			"amazon-ebs.amazonlinux-2023-arm64"
+		]
 	}
 
 	// OS updates - Ubuntu
@@ -59,10 +64,16 @@ build {
 		environment_vars = [
 			"DOWNLOAD_REF=${var.agent_git_ref}"
 		]
-		only   = [
-			"amazon-ebs.amazonlinux-2", "amazon-ebs.amazonlinux-2-arm64",
-			// "amazon-ebs.amazonlinux-2023", "amazon-ebs.amazonlinux-2023-arm64"
+		only   = [ "amazon-ebs.amazonlinux-2", "amazon-ebs.amazonlinux-2-arm64" ]
+	}
+
+	// Install - Amazon Linux 2023
+	provisioner "shell" {
+		script = "${path.root}/../AgentAmazonLinux2023/Setup.sh"
+		environment_vars = [
+			"DOWNLOAD_REF=${var.agent_git_ref}"
 		]
+		only   = [ "amazon-ebs.amazonlinux-2023", "amazon-ebs.amazonlinux-2023-arm64" ]
 	}
 
 	// Install - Ubuntu 20
@@ -92,7 +103,7 @@ build {
 		]
 		only   = [
 			"amazon-ebs.amazonlinux-2", "amazon-ebs.amazonlinux-2-arm64",
-			// "amazon-ebs.amazonlinux-2023", "amazon-ebs.amazonlinux-2023-arm64"
+			"amazon-ebs.amazonlinux-2023", "amazon-ebs.amazonlinux-2023-arm64"
 		]
 	}
 

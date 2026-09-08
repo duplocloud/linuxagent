@@ -6,7 +6,7 @@
 
 **Full instructions TBD**
 
-Run the `Image: Agent - duplocloud-docker` action to build both AWS and GCP images.
+Run the `Image: Agent - duplocloud-docker` action to build the AWS images.
 
 - `image_version`:  set this to `release-MONTH-YEAR` to build a release (no underscores allowed)
 - `only_builders`:  set this to `all` for release - you can also change this build only certain images (packer `-only` syntax)
@@ -21,7 +21,7 @@ Run the `Image: Agent - duplocloud-docker` action to build both AWS and GCP imag
 #### Parameter: only_builders
 
 - If you change the `only_builders` to a comma-delimited list (packer `-only` syntax) - you will only build those images
-- If you change the `only_builders` to `all` - you will build all images
+- If you change the `only_builders` to `all` - you will build every AWS image. `all` excludes the GCP builders, which build only when named explicitly.
 
 # Manual Installation Steps
 
@@ -31,4 +31,6 @@ Run the `Image: Agent - duplocloud-docker` action to build both AWS and GCP imag
 [Ubuntu 20.04 and Ubuntu 22.04](docs/README_UBUNTU_20_04_AND_22_04.md)
 ### OS :  Amazon linux 2
 [Amazon Linux 2](docs/README_AMAZON_LINUX_2.md)
+### OS :  Amazon Linux 2023
+[Amazon Linux 2023](AgentAmazonLinux2023/README.md)
  
