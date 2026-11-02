@@ -212,7 +212,7 @@ jobs:
         with:
           repository: duplocloud-internal/duplo
           ref: master                 # always start from master
-          token: ${{ secrets.RELEASE_BOT_GITHUB_TOKEN }}
+          token: ${{ secrets.RELEASE_BOT_GITHUB_TOKEN_INTERNAL }}
           path: duplo-backend
       
       # Download the image manifest
@@ -247,4 +247,4 @@ jobs:
           committer: "${{ env.git_user }} <${{ env.git_email }}>"
           delete-branch: true
           path: duplo-backend
-          token: ${{ secrets.RELEASE_BOT_GITHUB_TOKEN }}
+          token: ${{ secrets.RELEASE_BOT_GITHUB_TOKEN_INTERNAL }}
