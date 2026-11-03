@@ -345,7 +345,7 @@ def downloadImageEcr(aInImageName):
     region_name, account_id = getRegionNameAndAccountFromImageName(aInImageName)
     #logger.debug('downloading ECR is_ecr=True region_name=' +  region_name  )
 
-    # login to ecr
+    # ecr client to fetch the auth token
     ecr_client = boto3.client('ecr', region_name=region_name)
 
     # create docker client
@@ -358,13 +358,10 @@ def downloadImageEcr(aInImageName):
     ])
     username, password = base64.b64decode(
         token['authorizationData'][0]['authorizationToken']).decode().split(':')
-    registry = token['authorizationData'][0]['proxyEndpoint']
 
-    # docker_client login
-    rep = docker_client.login(
-        username, password, registry=registry, reauth=True)
     # image_name = aInImageName #'128329325849.dkr.ecr.us-west-2.amazonaws.com/reoecr1:latest' repodel1
-    rep = docker_client.images.pull(aInImageName)
+    # pass the fresh token explicitly, otherwise a stale entry in ~/.docker/config.json takes precedence
+    rep = docker_client.images.pull(aInImageName, auth_config={'username': username, 'password': password})
 
     logger.debug('Finished downloading ECR repo is_ecr=True image=' +
                  aInImageName + ' region_name=' + region_name)
@@ -372,9 +369,6 @@ def downloadImageEcr(aInImageName):
 
 def downloadImageGcr(aInImageName):
     logger.debug('Starting downloading GCR is_gcr=True ... ' + aInImageName)
-
-    # get the registry
-    registry = aInImageName.split('/', 2)[0]
 
     # create docker client
     url = 'http://127.0.0.1:4243'
@@ -385,9 +379,8 @@ def downloadImageGcr(aInImageName):
     auth_req = google.auth.transport.requests.Request()
     creds.refresh(auth_req)
 
-    # docker_client login
-    rep = docker_client.login('oauth2accesstoken', creds.token, registry=registry, reauth=True)
-    rep = docker_client.images.pull(aInImageName)
+    # pass the fresh token explicitly, otherwise a stale entry in ~/.docker/config.json takes precedence
+    rep = docker_client.images.pull(aInImageName, auth_config={'username': 'oauth2accesstoken', 'password': creds.token})
 
     logger.debug('Finished downloading GCR repo is_gcr=True image=' + aInImageName)
 
