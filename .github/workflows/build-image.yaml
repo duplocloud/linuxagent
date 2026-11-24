@@ -16,7 +16,7 @@ on:
         default: 'all'
 env:
   git_user: duplo-bot
-  git_email: joe+github-bot@duplocloud.net
+  git_email: 100788897+duplo-bot@users.noreply.github.com
   duplo_host: https://prod.duplocloud.net
   duplo_token: "${{ secrets.PROD_DUPLO_TOKEN }}"
 
